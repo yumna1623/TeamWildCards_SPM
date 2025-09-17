@@ -1,12 +1,15 @@
-// src/pages/CreateTeamPage.jsx
+// src/pages/CreateTeam.jsx
 import { useState } from "react";
-import { Users, Key, Mail, User } from "lucide-react";
+import { Users, Key, Mail, User, XCircle } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 
-const CreateTeamPage = () => {
+const CreateTeam = () => {
   const [teamName, setTeamName] = useState("");
   const [leaderName, setLeaderName] = useState("");
   const [email, setEmail] = useState("");
   const [passcode, setPasscode] = useState("");
+
+  const navigate = useNavigate(); // ✅ hook for navigation
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -14,7 +17,11 @@ const CreateTeamPage = () => {
     // TODO: Connect with backend API
     const newTeam = { teamName, leaderName, email, passcode };
     console.log("Team Created:", newTeam);
+
     alert("Team created successfully!");
+
+    // ✅ Navigate to Admin Dashboard
+    navigate("/AdminDashboard", { state: { team: newTeam } });
   };
 
   const generatePasscode = () => {
@@ -113,16 +120,26 @@ const CreateTeamPage = () => {
           </div>
         </div>
 
-        {/* Submit Button */}
-        <button
-          type="submit"
-          className="w-full py-3 mt-4 bg-indigo-600 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition transform hover:scale-105"
-        >
-          Create Team
-        </button>
+        {/* Buttons */}
+        <div className="flex gap-4">
+          <button
+            type="submit"
+            className="flex-1 py-3 mt-4 bg-indigo-600 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition transform hover:scale-105"
+          >
+            Create Team
+          </button>
+
+          <Link
+            to="/"
+            className="flex-1 py-3 mt-4 bg-gray-200 text-gray-700 text-lg font-semibold rounded-lg shadow-md flex items-center justify-center gap-2 hover:bg-gray-300 transition transform hover:scale-105"
+          >
+            <XCircle className="w-5 h-5" />
+            Cancel
+          </Link>
+        </div>
       </form>
     </div>
   );
 };
 
-export default CreateTeamPage;
+export default CreateTeam;
