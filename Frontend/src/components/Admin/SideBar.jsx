@@ -1,7 +1,26 @@
-// src/components/admin/SideBar.jsx
-import { Users, LogOut, Layers, ListTodo, Trophy } from "lucide-react";
+import { useState } from "react";
+import {
+  Users,
+  LogOut,
+  Layers,
+  ListTodo,
+  Trophy,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 
-const SideBar = ({ adminData, activeTab, setActiveTab }) => {
+// ---
+// SideBar Component
+// ---
+
+const SideBar = ({ adminData, activeTab, setActiveTab, setShowTaskModal }) => {
+  const [showTaskDropdown, setShowTaskDropdown] = useState(false);
+
+  // Function to toggle the task dropdown
+  const toggleTaskDropdown = () => {
+    setShowTaskDropdown(!showTaskDropdown);
+  };
+
   return (
     <div className="w-64 bg-white text-gray-800 flex flex-col justify-between border-r border-gray-200 shadow-lg">
       {/* Top Section */}
@@ -27,16 +46,39 @@ const SideBar = ({ adminData, activeTab, setActiveTab }) => {
             <Layers className="w-5 h-5" /> Departments
           </button>
 
-          <button
-            onClick={() => setActiveTab("tasks")}
-            className={`flex items-center gap-3 px-4 py-2 rounded-md w-full text-left transition ${
-              activeTab === "tasks"
-                ? "bg-indigo-100 text-indigo-700 font-semibold"
-                : "hover:bg-gray-100"
-            }`}
-          >
-            <ListTodo className="w-5 h-5" /> Tasks
-          </button>
+          {/* Tasks with Dropdown */}
+          <div>
+            <button
+              onClick={toggleTaskDropdown}
+              className={`flex items-center justify-between gap-3 px-4 py-2 rounded-md w-full text-left transition ${
+                activeTab.startsWith("task")
+                  ? "bg-indigo-100 text-indigo-700 font-semibold"
+                  : "hover:bg-gray-100"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <ListTodo className="w-5 h-5" /> Tasks
+              </div>
+              {showTaskDropdown ? (
+                <ChevronUp className="w-4 h-4" />
+              ) : (
+                <ChevronDown className="w-4 h-4" />
+              )}
+            </button>
+            {showTaskDropdown && (
+              <div className="ml-6 mt-2 space-y-2">
+                <button
+                  onClick={() => {
+                    setActiveTab("tasks"); // Keep tasks active for styling
+                    setShowTaskModal(true);
+                  }}
+                  className="flex items-center gap-3 px-4 py-2 rounded-md w-full text-left text-sm transition hover:bg-gray-50"
+                >
+                  Create Task
+                </button>
+              </div>
+            )}
+          </div>
 
           <button
             onClick={() => setActiveTab("leaderboard")}

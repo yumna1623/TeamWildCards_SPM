@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import HeroPage from "./pages/HeroPage";
 import CreateTeamPage from "./pages/CreateTeamPage";
 import AdminDashBoardPage from "./pages/AdminDashBoardPage";
+import Departments from "./components/admin/Departments";
 
 function App() {
   return (
