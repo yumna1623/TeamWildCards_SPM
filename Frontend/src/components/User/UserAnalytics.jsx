@@ -18,7 +18,7 @@ const data = [
 
 const UserAnalytics = () => {
   return (
-    <div className="bg-white p-6 md:p-8 rounded-xl shadow-lg border border-gray-100 transition-shadow hover:shadow-xl">
+    <div className="bg-[#C4D9FF] p-6 md:p-8 rounded-xl shadow-lg border border-gray-100 transition-shadow hover:shadow-xl">
       <div className="flex items-start justify-between mb-6">
         <div>
           <h2 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-3">

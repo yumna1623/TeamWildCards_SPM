@@ -44,13 +44,13 @@ const UserTasks = () => {
   const getStatusTextStyle = (status) => {
     switch (status) {
       case "Done":
-        return "bg-green-100 text-green-700";
+        return "bg-green-200 text-green-500";
       case "In Progress":
         return "bg-yellow-100 text-yellow-700";
       case "Pending":
-        return "bg-gray-200 text-gray-800"; 
+        return "bg-red-200 text-red-800"; 
       default:
-        return "bg-gray-100 text-gray-600";
+        return "bg-red-100 text-red-600";
     }
   };
 
@@ -100,7 +100,7 @@ const UserTasks = () => {
   });
 
   return (
-    <div className="bg-[#F6C6EA] p-6 md:p-8 rounded-xl min-h-screen shadow-lg relative overflow-hidden  before:absolute before:inset-0 before:bg-[radial-gradient(#D77FA1_1px,transparent_1px)] before:bg-[size:20px_20px]">
+    <div className="bg-[#C4D9FF] p-6 md:p-8 rounded-xl min-h-screen shadow-lg relative overflow-hidden before:absolute before:inset-0 before:bg-[linear-gradient(to_right,#E0E7FF_1px,transparent_1px),linear-gradient(to_bottom,#E0E7FF_1px,transparent_1px)] before:bg-[size:20px_20px]">
       <div className="z-10 relative">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
           <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">

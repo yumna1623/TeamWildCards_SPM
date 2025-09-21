@@ -1,19 +1,45 @@
 // src/pages/AdminDashboard.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "../components/admin/Sidebar";
 import Departments from "../components/admin/Departments";
 import Tasks from "../components/admin/Tasks";
 
-const AdminDashboard = () => {
+const AdminDashBoardPage = () => {
   const [activeTab, setActiveTab] = useState("departments");
+  const [adminData, setAdminData] = useState(null); // store data from backend
+  const [loading, setLoading] = useState(true);
 
-  // Fake admin/team data (replace with backend later)
-  const adminData = {
-    teamName: "TeamSync",
-    adminName: "John Doe",
-    email: "john@example.com",
-    membersCount: 5,
-  };
+  useEffect(() => {
+    const fetchAdminData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          console.error("No token found, please login.");
+          return;
+        }
+
+        const res = await fetch("http://localhost:5000/api/team/dashboard", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch dashboard data");
+
+        const data = await res.json();
+        setAdminData(data);
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching admin data:", err);
+        setLoading(false);
+      }
+    };
+
+    fetchAdminData();
+  }, []);
+
+  if (loading) return <p className="p-6">Loading dashboard...</p>;
+  if (!adminData) return <p className="p-6 text-red-500">Failed to load data.</p>;
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -34,4 +60,4 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard;
+export default AdminDashBoardPage;

@@ -1,9 +1,10 @@
-// src/components/user/JoinTeamForm.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const JoinTeamForm = () => {
-  const [teamName, setTeamName] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [passcode, setPasscode] = useState("");
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
@@ -11,15 +12,27 @@ const JoinTeamForm = () => {
   const handleJoin = async (e) => {
     e.preventDefault();
 
-    // 🚀 Simulate success since no backend
-    if (teamName && passcode) {
-      setMessage("Successfully joined the team!");
+    try {
+      const res = await fetch("http://localhost:5000/api/team/join", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password, passcode }),
+      });
 
-      setTimeout(() => {
-        navigate("/UserDashBoardPage"); // redirect to dashboard
-      }, 1000);
-    } else {
-      setMessage("Please fill in all fields.");
+      const data = await res.json();
+
+      if (res.ok) {
+        localStorage.setItem("token", data.token);
+        setMessage("✅ Successfully joined the team!");
+
+        setTimeout(() => {
+          navigate("/UserDashBoardPage");
+        }, 1000);
+      } else {
+        setMessage("❌ " + (data.message || "Failed to join team"));
+      }
+    } catch (error) {
+      setMessage("⚠️ Server error, please try again.");
     }
   };
 
@@ -36,29 +49,61 @@ const JoinTeamForm = () => {
       )}
 
       <form onSubmit={handleJoin} className="space-y-5">
+        {/* Name */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Team Name
+            Name
           </label>
           <input
             type="text"
-            value={teamName}
-            onChange={(e) => setTeamName(e.target.value)}
-            placeholder="Enter team name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Enter your name"
             required
             className="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-200 focus:border-indigo-500"
           />
         </div>
 
+        {/* Email */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Passcode
+            Email
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter your email"
+            required
+            className="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-200 focus:border-indigo-500"
+          />
+        </div>
+
+        {/* Password */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Password
           </label>
           <input
             type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Create a password"
+            required
+            className="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-200 focus:border-indigo-500"
+          />
+        </div>
+
+        {/* Passcode */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Team Passcode
+          </label>
+          <input
+            type="text"
             value={passcode}
             onChange={(e) => setPasscode(e.target.value)}
-            placeholder="Enter passcode"
+            placeholder="Enter team passcode"
             required
             className="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-200 focus:border-indigo-500"
           />

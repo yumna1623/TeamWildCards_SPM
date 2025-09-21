@@ -2,9 +2,9 @@
 import { useState } from "react";
 import UserSideBar from "./UserSideBar";
 import UserDepartments from "./UserDepartments";
-import UserProfile from "./UserProfile";
 import UserLeaderboard from "./UserLeaderboard";
 import UserTasks from "./UserTasks";
+import UserProfile from "./UserProfile";
 
 const UserDashboard = () => {
   const [activeTab, setActiveTab] = useState("tasks");
@@ -20,6 +20,7 @@ const UserDashboard = () => {
         {activeTab === "departments" && <UserDepartments />}
         {activeTab === "analytics" && <UserProfile />}
         {activeTab === "leaderboard" && <UserLeaderboard />}
+        {activeTab === "profile" && <UserProfile />}
       </div>
     </div>
   );

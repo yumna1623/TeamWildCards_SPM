@@ -4,6 +4,7 @@ import CreateTeamPage from "./pages/CreateTeamPage";
 import AdminDashBoardPage from "./pages/AdminDashBoardPage";
 import JoinTeamPage from "./pages/JoinTeamPage"
 import UserDashBoardPage from "./pages/UserDashBoardPage";
+import Login from "./components/Login"
 function App() {
   return (
     <Routes>
@@ -13,6 +14,8 @@ function App() {
       <Route path="/AdminDashboard" element={<AdminDashBoardPage />} />
       <Route path="/join-team" element={<JoinTeamPage />} />
       <Route path="/UserDashBoardPage" element={<UserDashBoardPage />} />
+      <Route path="/login" element={<Login />} />
+
     </Routes>
   );
 }

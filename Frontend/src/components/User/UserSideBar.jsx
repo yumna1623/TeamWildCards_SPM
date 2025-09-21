@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Users, ListTodo, BarChart3, Trophy, Layers, LogOut } from "lucide-react";
+import { Users, ListTodo, BarChart3, Trophy, Layers, LogOut, User } from "lucide-react";
 
 const UserSidebar = ({ activeTab, setActiveTab }) => {
   const [user] = useState({
@@ -53,6 +53,17 @@ const UserSidebar = ({ activeTab, setActiveTab }) => {
             {item.label}
           </button>
         ))}
+        <button
+          onClick={() => setActiveTab('profile')}
+          className={`flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm font-medium transition ${
+            activeTab === 'profile'
+              ? "bg-indigo-600 text-white shadow-md"
+              : "text-gray-300 hover:bg-white/10"
+          }`}
+        >
+          <User />
+          Profile
+        </button>
       </nav>
 
       <div className="mt-auto px-2 py-4">

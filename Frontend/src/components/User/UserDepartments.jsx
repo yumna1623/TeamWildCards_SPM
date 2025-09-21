@@ -42,7 +42,7 @@ const UserDepartments = () => {
   };
 
   return (
-    <div className="p-6 bg-[#F6C6EA] min-h-screen relative overflow-hidden before:absolute before:inset-0 before:bg-[radial-gradient(#D77FA1_1px,transparent_1px)] before:bg-[size:20px_20px]">
+    <div className="p-6 bg-[#C4D9FF] min-h-screen relative overflow-hidden before:absolute  before:absolute before:inset-0 before:bg-[linear-gradient(to_right,#E0E7FF_1px,transparent_1px),linear-gradient(to_bottom,#E0E7FF_1px,transparent_1px)] before:bg-[size:20px_20px]">
       {selectedDept && (
         <button
           onClick={() => setSelectedDept(null)}
