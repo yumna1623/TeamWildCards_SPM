@@ -9,34 +9,37 @@ const AdminDashBoardPage = () => {
   const [adminData, setAdminData] = useState(null); // store data from backend
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchAdminData = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          console.error("No token found, please login.");
-          return;
-        }
-
-        const res = await fetch("http://localhost:5000/api/team/dashboard", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!res.ok) throw new Error("Failed to fetch dashboard data");
-
-        const data = await res.json();
-        setAdminData(data);
+useEffect(() => {
+  const fetchAdminData = async () => {
+    try {
+      const token = localStorage.getItem("token"); // get token
+      if (!token) {
+        console.error("No token found, please login.");
         setLoading(false);
-      } catch (err) {
-        console.error("Error fetching admin data:", err);
-        setLoading(false);
+        return;
       }
-    };
 
-    fetchAdminData();
-  }, []);
+      const res = await fetch("http://localhost:5000/api/team/dashboard", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch dashboard data");
+
+      const data = await res.json();
+      setAdminData(data);
+      setLoading(false);
+    } catch (err) {
+      console.error("Error fetching admin data:", err);
+      setLoading(false);
+    }
+  };
+
+  fetchAdminData();
+}, []);
+
+
 
   if (loading) return <p className="p-6">Loading dashboard...</p>;
   if (!adminData) return <p className="p-6 text-red-500">Failed to load data.</p>;

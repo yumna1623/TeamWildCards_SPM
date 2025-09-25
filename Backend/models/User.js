@@ -1,18 +1,20 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
-const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true, lowercase: true },
-  password: { type: String, required: true },
-  role: {
-    type: String,
-    enum: ["admin", "user"],
-    default: "user"
+const userSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true, lowercase: true },
+    password: { type: String },
+    role: {
+      type: String,
+      enum: ["admin", "user"],
+      default: "user",
+    },
+teams: [{ type: mongoose.Schema.Types.ObjectId, ref: "Team" }],
   },
-  team: { type: mongoose.Schema.Types.ObjectId, ref: "Team" }
-
-}, { timestamps: true });
+  { timestamps: true }
+);
 
 // Hash password before saving
 userSchema.pre("save", async function (next) {

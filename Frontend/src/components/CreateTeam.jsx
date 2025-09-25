@@ -14,30 +14,31 @@ const CreateTeam = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch(
-        "http://localhost:5000/api/admin/create-team",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ teamName, leaderName, email, passcode }),
-        }
-      );
+      const response = await fetch("http://localhost:5000/api/team/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ teamName, leaderName, email, passcode }),
+      });
 
       const data = await response.json();
 
-      if (response.ok) {
-        setSuccessMessage("✅ Team created successfully!");
-        console.log("Saved in DB:", data.team);
+     if (response.ok) {
+  const token = data.token; // ✅ get the token returned from backend
+  localStorage.setItem("token", token); // ✅ store it for later dashboard requests
 
-        // clear form
-        setTeamName("");
-        setLeaderName("");
-        setEmail("");
-        setPasscode("");
+  setSuccessMessage("✅ Team created successfully!");
+  console.log("Saved in DB:", data.team);
 
-        // navigate to dashboard after delay
-        setTimeout(() => navigate("/AdminDashboard"), 1000);
-      } else {
+  // clear form
+  setTeamName("");
+  setLeaderName("");
+  setEmail("");
+  setPasscode("");
+
+  // navigate to dashboard after delay
+  setTimeout(() => navigate("/AdminDashboard"), 1000);
+}
+ else {
         alert("❌ " + data.message);
       }
     } catch (error) {

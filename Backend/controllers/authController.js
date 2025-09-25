@@ -1,21 +1,28 @@
 import User from "../models/User.js";
 import Team from "../models/Team.js";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 
 // Generate JWT
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
 };
 
-// Register user
+// Register
 export const registerUser = async (req, res) => {
-  try {
-    const { name, email, password, role } = req.body;
+  const { name, email, password, role } = req.body;
 
-    const userExists = await User.findOne({ email });
+  try {
+    const userExists = await User.findOne({ email: email.toLowerCase() });
     if (userExists) return res.status(400).json({ message: "User already exists" });
 
-    const user = await User.create({ name, email, password, role });
+    const user = await User.create({
+      name,
+      email: email.toLowerCase(),
+      password,
+      role,
+    });
+
     res.status(201).json({
       _id: user._id,
       name: user.name,
@@ -23,17 +30,18 @@ export const registerUser = async (req, res) => {
       role: user.role,
       token: generateToken(user._id),
     });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
-// Login user (standard email/password)
+// Login with email + password
 export const loginUser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
+  const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+  try {
+    const user = await User.findOne({ email: email.toLowerCase() });
+
     if (user && (await user.matchPassword(password))) {
       res.json({
         _id: user._id,
@@ -45,17 +53,17 @@ export const loginUser = async (req, res) => {
     } else {
       res.status(401).json({ message: "Invalid email or password" });
     }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
-// Login with passcode
+// Login via email + team passcode
 export const loginWithPasscode = async (req, res) => {
   const { email, passcode } = req.body;
 
   try {
-    const user = await User.findOne({ email }).populate("team");
+    const user = await User.findOne({ email: email.toLowerCase() }).populate("team");
     if (!user) return res.status(400).json({ message: "User not found" });
 
     if (!user.team) return res.status(400).json({ message: "User not assigned to a team" });

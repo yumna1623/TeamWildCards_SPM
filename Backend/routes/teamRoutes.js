@@ -1,8 +1,11 @@
 import express from "express";
-import { joinTeam, getTeamDashboard } from "../controllers/teamController.js";
+import { createTeam, joinTeam, getTeamDashboard } from "../controllers/teamController.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
+
+// POST /api/team/create
+router.post("/create", createTeam);
 
 // POST /api/team/join
 router.post("/join", joinTeam);
@@ -11,3 +14,5 @@ router.post("/join", joinTeam);
 router.get("/dashboard", authMiddleware, getTeamDashboard);
 
 export default router;
+
+
