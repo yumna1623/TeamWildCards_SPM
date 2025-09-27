@@ -19,7 +19,7 @@ useEffect(() => {
         return;
       }
 
-      const res = await fetch("http://localhost:5000/api/team/dashboard", {
+      const res = await fetch("http://localhost:5000/api/team/admin-dashboard", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

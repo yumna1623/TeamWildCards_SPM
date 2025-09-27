@@ -10,36 +10,26 @@ const UserDepartments = () => {
     return departmentColors[randomIndex];
   };
 
-  const [departments] = useState([
-    {
-      id: 1,
-      name: "Engineering",
-      tasks: [
-        { id: 1, title: "Fix Login Bug", status: "In Progress", deadline: "2025-09-20", assignedTo: "Alice Johnson" },
-        { id: 2, title: "API Integration", status: "Done", deadline: "2025-09-15", assignedTo: "Bob Smith" },
-      ],
-      members: [
-        { id: 1, name: "Alice Johnson", role: "Developer", progress: 80 },
-        { id: 2, name: "Bob Smith", role: "Designer", progress: 50 },
-      ],
-    },
-    {
-      id: 2,
-      name: "Marketing",
-      tasks: [
-        { id: 3, title: "Ad Campaign", status: "Pending", deadline: "2025-09-18", assignedTo: "Charlie Lee" },
-      ],
-      members: [
-        { id: 3, name: "Charlie Lee", role: "Marketer", progress: 60 },
-      ],
-    },
-  ]);
+  const [departments, setDepartments] = useState([]);
+  
 
   const statusColors = {
     "Done": "bg-green-100 text-green-700",
     "In Progress": "bg-yellow-100 text-yellow-700",
     "Pending": "bg-gray-200 text-gray-600",
   };
+
+useEffect(() => {
+  const fetchDepts = async () => {
+    const res = await fetch(`http://localhost:5000/api/departments/${user.team}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    setDepartments(data);
+  };
+  fetchDepts();
+}, []);
+
 
   return (
     <div className="p-6 bg-[#C4D9FF] min-h-screen relative overflow-hidden before:absolute  before:absolute before:inset-0 before:bg-[linear-gradient(to_right,#E0E7FF_1px,transparent_1px),linear-gradient(to_bottom,#E0E7FF_1px,transparent_1px)] before:bg-[size:20px_20px]">

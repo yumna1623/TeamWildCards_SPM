@@ -1,5 +1,6 @@
 // src/components/admin/Departments.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "../../context/AuthContext"; // ✅ bring in auth context
 import {
   Building2,
   PlusCircle,
@@ -11,10 +12,15 @@ import {
 } from "lucide-react";
 
 const Departments = () => {
+  const { user, token } = useAuth(); // ✅ get logged-in user + token
+
   const [departments, setDepartments] = useState([]);
   const [newDeptName, setNewDeptName] = useState("");
   const [selectedDept, setSelectedDept] = useState(null);
-  const [openMenu, setOpenMenu] = useState(null); // Track which dropdown is open
+  const [openMenu, setOpenMenu] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  // Mock tasks & members (replace with backend later)
   const [tasks, setTasks] = useState([
     { id: 1, title: "Landing Page UI", status: "In Progress", deadline: "2025-09-20" },
     { id: 2, title: "API Integration", status: "Done", deadline: "2025-09-15" },
@@ -37,34 +43,76 @@ const Departments = () => {
 
   const cardColors = ["indigo", "blue", "purple", "pink", "teal", "orange"];
 
-  const handleAddDept = () => {
-    if (newDeptName.trim() === "") return;
-    setDepartments([
-      ...departments,
-      {
-        name: newDeptName.trim(),
-        tasks: Math.floor(Math.random() * 20) + 1,
-        members: Math.floor(Math.random() * 10) + 1,
-        nextDeadline: "2025-10-01",
-      },
-    ]);
-    setNewDeptName("");
-  };
+const handleAddDept = async () => {
+  if (!newDeptName.trim() || !user?.team) {
+    alert("User team not available. Please log in again.");
+    return;
+  }
 
+  try {
+    setLoading(true);
+    const res = await fetch("http://localhost:5000/api/departments", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ name: newDeptName, team: user.team }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.message || "Failed to create department");
+      return;
+    }
+
+    const data = await res.json();
+    setDepartments((prev) => [...prev, data]);
+    setNewDeptName("");
+  } catch (error) {
+    console.error("Error adding department:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  // ✅ Fetch Departments
+  useEffect(() => {
+    const fetchDepts = async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:5000/api/departments/${user?.team}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        setDepartments(data);
+      } catch (error) {
+        console.error("Error fetching departments:", error);
+      }
+    };
+
+    if (user?.team && token) {
+      fetchDepts();
+    }
+  }, [user, token]);
+
+  // ✅ Task Actions
   const handleTaskAction = (taskId, action) => {
     setTasks((prev) =>
-      prev.map((t) =>
-        t.id === taskId ? { ...t, status: action } : t
-      )
+      prev.map((t) => (t.id === taskId ? { ...t, status: action } : t))
     );
     setOpenMenu(null);
   };
 
   return (
-    
     <div
-    id="Departments"
-    className="p-6 bg-gray-50 rounded-xl shadow-lg min-h-screen">
+      id="Departments"
+      className="p-6 bg-gray-50 rounded-xl shadow-lg min-h-screen"
+    >
       {/* Back Button */}
       {selectedDept && (
         <button
@@ -78,11 +126,11 @@ const Departments = () => {
       {/* Departments List View */}
       {!selectedDept ? (
         <>
-          <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight mb-4 text-center sm:text-left">
+          <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
             Manage Departments
           </h2>
-          <p className="text-lg text-gray-500 mb-8 text-center sm:text-left">
-            Add, view, and manage your organizational departments and their key metrics.
+          <p className="text-lg text-gray-500 mb-8">
+            Add, view, and manage your organizational departments.
           </p>
 
           {/* Add Department Input */}
@@ -92,15 +140,16 @@ const Departments = () => {
               value={newDeptName}
               onChange={(e) => setNewDeptName(e.target.value)}
               placeholder="Enter a new department name"
-              className="flex-grow px-5 py-3 border border-gray-300 rounded-xl bg-gray-50 text-gray-700 placeholder-gray-400 focus:ring-2 focus:ring-indigo-700 focus:border-indigo-700 outline-none transition-colors duration-200"
+              className="flex-grow px-5 py-3 border border-gray-300 rounded-xl bg-gray-50 text-gray-700 placeholder-gray-400 focus:ring-2 focus:ring-indigo-700 focus:border-indigo-700 outline-none"
               onKeyDown={(e) => e.key === "Enter" && handleAddDept()}
             />
             <button
               onClick={handleAddDept}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-indigo-700 text-white font-semibold rounded-xl shadow-lg hover:bg-indigo-800 transform hover:scale-105 transition-all duration-300 ease-in-out"
+              disabled={loading}
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-indigo-700 text-white font-semibold rounded-xl shadow-lg hover:bg-indigo-800 disabled:opacity-50"
             >
               <PlusCircle className="w-5 h-5" />
-              Add Department
+              {loading ? "Adding..." : "Add Department"}
             </button>
           </div>
 
@@ -121,25 +170,25 @@ const Departments = () => {
                 const cardColor = cardColors[i % cardColors.length];
                 return (
                   <div
-                    key={i}
+                    key={dept._id || i}
                     onClick={() => setSelectedDept(dept)}
                     className={`relative p-6 flex flex-col justify-between 
-                      bg-${cardColor}-600 text-white rounded-2xl shadow-md border border-gray-100 
-                      transform transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 cursor-pointer`}
+                      bg-${cardColor}-600 text-white rounded-2xl shadow-md 
+                      hover:shadow-xl hover:-translate-y-1 cursor-pointer`}
                   >
                     <div className="flex items-center gap-4 mb-4">
-                      <div className={`p-3 rounded-xl bg-white/20 shadow-sm`}>
+                      <div className="p-3 rounded-xl bg-white/20">
                         <Building2 className="w-6 h-6" />
                       </div>
                       <h3 className="text-xl font-semibold">{dept.name}</h3>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4 text-sm font-medium opacity-90">
-                      <div>📝 {dept.tasks} Tasks</div>
-                      <div>👥 {dept.members} Members</div>
+                      <div>📝 {dept.tasks || 0} Tasks</div>
+                      <div>👥 {dept.members || 0} Members</div>
                       <div className="col-span-2 flex items-center gap-2">
                         <Clock className="w-4 h-4" />
-                        {dept.nextDeadline}
+                        {dept.nextDeadline || "No deadline"}
                       </div>
                     </div>
                   </div>
@@ -154,17 +203,21 @@ const Departments = () => {
           {/* Header */}
           <div className="flex justify-between items-center">
             <div>
-              <h2 className="text-2xl font-bold text-gray-800">{selectedDept.name}</h2>
+              <h2 className="text-2xl font-bold text-gray-800">
+                {selectedDept.name}
+              </h2>
               <p className="text-gray-500">Overview of members & tasks</p>
             </div>
             <span className="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg shadow">
-              {selectedDept.tasks} Tasks
+              {selectedDept.tasks || 0} Tasks
             </span>
           </div>
 
           {/* Members Section */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-700 mb-4">Team Members</h3>
+            <h3 className="text-lg font-semibold text-gray-700 mb-4">
+              Team Members
+            </h3>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {members.map((m) => (
                 <div
@@ -186,13 +239,15 @@ const Departments = () => {
                       style={{ width: `${m.progress}%` }}
                     ></div>
                   </div>
-                  <p className="text-sm text-gray-500 mt-2">{m.progress}% complete</p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    {m.progress}% complete
+                  </p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Tasks Section with Dropdown */}
+          {/* Tasks Section */}
           <div>
             <h3 className="text-lg font-semibold text-gray-700 mb-4">Tasks</h3>
             <div className="overflow-x-auto">
@@ -207,7 +262,7 @@ const Departments = () => {
                 </thead>
                 <tbody className="text-gray-600 text-sm">
                   {tasks.map((task) => (
-                    <tr key={task.id} className="border-b hover:bg-gray-50 relative">
+                    <tr key={task.id} className="border-b hover:bg-gray-50">
                       <td className="px-6 py-4 font-medium">{task.title}</td>
                       <td className="px-6 py-4">
                         <span
@@ -226,7 +281,7 @@ const Departments = () => {
                           <Trash2 className="w-5 h-5" />
                         </button>
 
-                        {/* 3 Dots Dropdown */}
+                        {/* Dropdown */}
                         <div className="relative">
                           <button
                             onClick={() =>
@@ -240,13 +295,17 @@ const Departments = () => {
                           {openMenu === task.id && (
                             <div className="absolute right-0 mt-2 w-40 bg-white border rounded-lg shadow-lg z-10">
                               <button
-                                onClick={() => handleTaskAction(task.id, "Accepted")}
+                                onClick={() =>
+                                  handleTaskAction(task.id, "Accepted")
+                                }
                                 className="flex items-center gap-2 px-4 py-2 text-sm text-green-600 hover:bg-green-50 w-full text-left"
                               >
                                 <CheckCircle className="w-4 h-4" /> Accept
                               </button>
                               <button
-                                onClick={() => handleTaskAction(task.id, "Rejected")}
+                                onClick={() =>
+                                  handleTaskAction(task.id, "Rejected")
+                                }
                                 className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
                               >
                                 <XCircle className="w-4 h-4" /> Reject

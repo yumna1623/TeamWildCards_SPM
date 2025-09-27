@@ -1,14 +1,15 @@
 import { useState } from "react";
-import { Users, Key, Mail, User, Network, XCircle } from "lucide-react";
-import { useNavigate } from "react-router-dom"; // ✅ import this
+import { Users, Key, Mail, User, Lock, Network, XCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const CreateTeam = () => {
   const [teamName, setTeamName] = useState("");
   const [leaderName, setLeaderName] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");   // ✅ admin password
   const [passcode, setPasscode] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const navigate = useNavigate(); // ✅ initialize navigate
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,29 +18,34 @@ const CreateTeam = () => {
       const response = await fetch("http://localhost:5000/api/team/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ teamName, leaderName, email, passcode }),
+        body: JSON.stringify({
+          teamName,
+          leaderName,
+          email,
+          password,   // ✅ included
+          passcode,
+        }),
       });
 
       const data = await response.json();
 
-     if (response.ok) {
-  const token = data.token; // ✅ get the token returned from backend
-  localStorage.setItem("token", token); // ✅ store it for later dashboard requests
+      if (response.ok) {
+        localStorage.setItem("token", data.token);
 
-  setSuccessMessage("✅ Team created successfully!");
-  console.log("Saved in DB:", data.team);
+        setSuccessMessage("✅ Team created successfully!");
+        console.log("Saved in DB:", data.team);
 
-  // clear form
-  setTeamName("");
-  setLeaderName("");
-  setEmail("");
-  setPasscode("");
+        // clear form
+        setTeamName("");
+        setLeaderName("");
+        setEmail("");
+        setPassword("");
+        setPasscode("");
 
-  // navigate to dashboard after delay
-  setTimeout(() => navigate("/AdminDashboard"), 1000);
-}
- else {
-        alert("❌ " + data.message);
+        // navigate to dashboard after delay
+        setTimeout(() => navigate("/AdminDashboard"), 1000);
+      } else {
+        alert("❌ " + (data.message || "Something went wrong"));
       }
     } catch (error) {
       console.error("Error creating team:", error);
@@ -56,6 +62,7 @@ const CreateTeam = () => {
     setTeamName("");
     setLeaderName("");
     setEmail("");
+    setPassword("");
     setPasscode("");
     setSuccessMessage("");
   };
@@ -71,9 +78,7 @@ const CreateTeam = () => {
         <div className="flex-1 p-6 sm:p-14 bg-white/90 backdrop-blur-md flex flex-col justify-center">
           <div className="flex items-center gap-2 mb-8">
             <Users className="w-7 h-7 text-indigo-700" />
-            <span className="text-lg font-semibold text-gray-800">
-              TeamSync
-            </span>
+            <span className="text-lg font-semibold text-gray-800">TeamSync</span>
           </div>
 
           <h1 className="text-2xl md:text-5xl font-extrabold text-gray-800 leading-tight mb-4">
@@ -141,6 +146,24 @@ const CreateTeam = () => {
               </div>
             </div>
 
+            {/* Password */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Admin Password
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="Set a password"
+                  className="w-full pl-10 px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-400 focus:outline-none shadow-sm"
+                />
+              </div>
+            </div>
+
             {/* Passcode */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -189,7 +212,7 @@ const CreateTeam = () => {
           </form>
         </div>
 
-        {/* Right: Visuals */}
+        {/* Right visuals */}
         <div className="flex flex-1 p-12 bg-gradient-to-br from-indigo-600 to-purple-700 text-white flex-col items-center justify-center relative overflow-hidden">
           <div className="absolute inset-0 z-0 opacity-20 bg-[radial-gradient(#ffffff_1px,#312e81_1px)] [background-size:16px_16px] pointer-events-none"></div>
 
@@ -203,8 +226,7 @@ const CreateTeam = () => {
             Connect & Grow
           </h2>
           <p className="text-indigo-100 max-w-sm mx-auto text-center z-10 text-lg leading-relaxed">
-            Build a cohesive team and collaborate on your projects with a shared
-            vision.
+            Build a cohesive team and collaborate on your projects with a shared vision.
           </p>
         </div>
       </div>

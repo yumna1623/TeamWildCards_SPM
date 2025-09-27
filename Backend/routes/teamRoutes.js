@@ -1,18 +1,14 @@
 import express from "express";
-import { createTeam, joinTeam, getTeamDashboard } from "../controllers/teamController.js";
-import authMiddleware from "../middlewares/authMiddleware.js";
+import protect from "../middleware/authMiddleware.js";
+import { createTeam, getAdminDashboard, joinTeam } from "../controllers/teamController.js";
+import { getUserDashboard } from "../controllers/userController.js";
 
 const router = express.Router();
 
-// POST /api/team/create
 router.post("/create", createTeam);
-
-// POST /api/team/join
 router.post("/join", joinTeam);
+router.get("/admin-dashboard", protect, getAdminDashboard); // ✅ protect added
+router.get("/user-dashboard", protect, getUserDashboard);
 
-// GET /api/team/dashboard
-router.get("/dashboard", authMiddleware, getTeamDashboard);
 
 export default router;
-
-

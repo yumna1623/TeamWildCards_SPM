@@ -1,9 +1,11 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
-const deptSchema = new mongoose.Schema({
-  team: { type: mongoose.Schema.Types.ObjectId, ref: 'Team', required: true },
-  name: { type: String, required: true },
-  members: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+const departmentSchema = new mongoose.Schema({
+  name: { type: String, required: true, trim: true },
+  team: { type: mongoose.Schema.Types.ObjectId, ref: "Team", required: true },
+  tasks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Task" }],
+  members: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 });
 
-module.exports = mongoose.model('Department', deptSchema);
+const Department = mongoose.model("Department", departmentSchema);
+export default Department;

@@ -227,6 +227,7 @@ const Tasks = () => {
                 </div>
 
                 {/* Department */}
+                {/* Department Dropdown 👇 */}
                 <div>
                   <label
                     htmlFor="department"
@@ -236,16 +237,22 @@ const Tasks = () => {
                   </label>
                   <div className="relative">
                     <Layers className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <input
-                      type="text"
+                    <select
                       id="department"
-                      placeholder="e.g., Marketing"
                       value={task.department}
                       onChange={(e) =>
                         setTask({ ...task, department: e.target.value })
                       }
                       className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-indigo-400 focus:outline-none transition"
-                    />
+                      required
+                    >
+                      <option value="">Select Department</option>
+                      {departments.map((d) => (
+                        <option key={d._id} value={d._id}>
+                          {d.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
               </div>
@@ -296,7 +303,6 @@ const Tasks = () => {
             <p className="text-sm text-gray-600 mb-4">
               The task has been created and assigned.
             </p>
-            
           </div>
         )}
       </div>

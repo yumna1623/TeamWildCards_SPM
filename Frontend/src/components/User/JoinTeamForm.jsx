@@ -26,7 +26,7 @@ const JoinTeamForm = () => {
         setMessage("✅ Successfully joined the team!");
 
         setTimeout(() => {
-          navigate("/UserDashBoardPage");
+          navigate("/UserDashboardPage");
         }, 1000);
       } else {
         setMessage("❌ " + (data.message || "Failed to join team"));

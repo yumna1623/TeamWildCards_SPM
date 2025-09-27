@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  Users,
   LogOut,
   Layers,
   ListTodo,
@@ -9,14 +8,10 @@ import {
   ChevronUp,
 } from "lucide-react";
 
-// ---
-// SideBar Component
-// ---
-
 const SideBar = ({ adminData, activeTab, setActiveTab, setShowTaskModal }) => {
   const [showTaskDropdown, setShowTaskDropdown] = useState(false);
 
-  // Function to toggle the task dropdown
+  // Toggle dropdown
   const toggleTaskDropdown = () => {
     setShowTaskDropdown(!showTaskDropdown);
   };
@@ -25,12 +20,20 @@ const SideBar = ({ adminData, activeTab, setActiveTab, setShowTaskModal }) => {
     <div className="w-64 bg-white text-gray-800 flex flex-col justify-between border-r border-gray-200 shadow-lg">
       {/* Top Section */}
       <div className="p-6">
-        <h2 className="text-2xl font-bold text-indigo-700">{adminData.teamName}</h2>
-        <p className="mt-2 text-sm font-medium">{adminData.adminName}</p>
-        <p className="text-xs text-gray-500">{adminData.email}</p>
+        <h2 className="text-2xl font-bold text-indigo-700">
+          {adminData.teamName}
+        </h2>
+        <p className="mt-2 text-sm font-medium">
+          {adminData.leader?.name}
+        </p>
+        <p className="text-xs text-gray-500">
+          {adminData.leader?.email}
+        </p>
         <p className="mt-4 text-sm">
           Team Members:{" "}
-          <span className="font-semibold text-indigo-600">{adminData.membersCount}</span>
+          <span className="font-semibold text-indigo-600">
+            {adminData.totalMembers}
+          </span>
         </p>
 
         {/* Navigation */}
@@ -69,7 +72,7 @@ const SideBar = ({ adminData, activeTab, setActiveTab, setShowTaskModal }) => {
               <div className="ml-6 mt-2 space-y-2">
                 <button
                   onClick={() => {
-                    setActiveTab("tasks"); // Keep tasks active for styling
+                    setActiveTab("tasks");
                     setShowTaskModal(true);
                   }}
                   className="flex items-center gap-3 px-4 py-2 rounded-md w-full text-left text-sm transition hover:bg-gray-50"
