@@ -8,6 +8,7 @@ const router = express.Router();
 router.post("/", protect, createDepartment);
 
 // All members can view departments
-router.get("/:teamId", protect, getDepartments);
-
+router.get("/", protect, getDepartments);
 export default router;
+
+

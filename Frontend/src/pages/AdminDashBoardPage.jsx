@@ -8,6 +8,8 @@ const AdminDashBoardPage = () => {
   const [activeTab, setActiveTab] = useState("departments");
   const [adminData, setAdminData] = useState(null); // store data from backend
   const [loading, setLoading] = useState(true);
+  const [showTaskModal, setShowTaskModal] = useState(false);
+
 
 useEffect(() => {
   const fetchAdminData = async () => {
@@ -47,11 +49,14 @@ useEffect(() => {
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <Sidebar
-        adminData={adminData}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-      />
+     <Sidebar
+  adminData={adminData}
+  activeTab={activeTab}
+  setActiveTab={setActiveTab} // ✅ Missing setShowTaskModal
+    setShowTaskModal={setShowTaskModal} // ✅ pass setter
+
+/>
+
 
       {/* Main Content */}
       <div className="flex-1 p-6">

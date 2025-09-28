@@ -66,30 +66,25 @@ const Departments = () => {
   };
 
   // ✅ Fetch Departments
-  useEffect(() => {
-    const fetchDepts = async () => {
-      const teamId = user?.team?._id || user?.team;
-      if (!teamId) return;
-
-      try {
-        const res = await fetch(
-          `http://localhost:5000/api/departments/${teamId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        if (!res.ok) return;
-        const data = await res.json();
-        setDepartments(data);
-      } catch (error) {
-        console.error("Error fetching departments:", error);
-      }
-    };
-
-    if (user && token) {
-      fetchDepts();
+ useEffect(() => {
+  const fetchDepts = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/api/departments", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      setDepartments(data);
+    } catch (error) {
+      console.error("Error fetching departments:", error);
     }
-  }, [user, token]);
+  };
+
+  if (user && token) {
+    fetchDepts();
+  }
+}, [user, token]);
+
 
   const handleTaskAction = (taskId, action) => {
     console.log(`Task ${taskId} → ${action}`);
