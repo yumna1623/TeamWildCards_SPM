@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext"; // ✅ use context
 
 const JoinTeamForm = () => {
   const [name, setName] = useState("");
@@ -8,6 +9,7 @@ const JoinTeamForm = () => {
   const [passcode, setPasscode] = useState("");
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
+const { login } = useAuth(); // ✅
 
   const handleJoin = async (e) => {
     e.preventDefault();
@@ -22,19 +24,20 @@ const JoinTeamForm = () => {
       const data = await res.json();
 
       if (res.ok) {
-        localStorage.setItem("token", data.token);
-        setMessage("✅ Successfully joined the team!");
+  login(data.user, data.token); // ✅ use context helper
 
-        setTimeout(() => {
-          navigate("/UserDashboardPage");
-        }, 1000);
-      } else {
+  setMessage("✅ Successfully joined the team!");
+  setTimeout(() => navigate("/UserDashboardPage"), 1000);
+      }
+ else {
         setMessage("❌ " + (data.message || "Failed to join team"));
       }
     } catch (error) {
       setMessage("⚠️ Server error, please try again.");
     }
   };
+
+ 
 
   return (
     <div className="bg-white shadow-md rounded-xl p-8 w-96">

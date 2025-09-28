@@ -1,6 +1,6 @@
 // src/components/admin/Departments.jsx
 import { useState, useEffect } from "react";
-import { useAuth } from "../../context/AuthContext"; // ✅ bring in auth context
+import { useAuth } from "../../context/AuthContext";
 import {
   Building2,
   PlusCircle,
@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 const Departments = () => {
-  const { user, token } = useAuth(); // ✅ get logged-in user + token
+  const { user, token } = useAuth();
 
   const [departments, setDepartments] = useState([]);
   const [newDeptName, setNewDeptName] = useState("");
@@ -20,69 +20,60 @@ const Departments = () => {
   const [openMenu, setOpenMenu] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Mock tasks & members (replace with backend later)
-  const [tasks, setTasks] = useState([
-    { id: 1, title: "Landing Page UI", status: "In Progress", deadline: "2025-09-20" },
-    { id: 2, title: "API Integration", status: "Done", deadline: "2025-09-15" },
-    { id: 3, title: "Bug Fixes", status: "Delayed", deadline: "2025-09-10" },
-  ]);
-
-  const members = [
-    { id: 1, name: "Alice Johnson", role: "Developer", progress: 80 },
-    { id: 2, name: "Bob Smith", role: "Designer", progress: 50 },
-    { id: 3, name: "Charlie Lee", role: "Tester", progress: 30 },
+  // ✅ Tailwind classes directly
+  const cardColors = [
+    "bg-indigo-600",
+    "bg-purple-600",
+    "bg-blue-600",
+    "bg-emerald-600",
+    "bg-rose-600",
+    "bg-amber-600",
+    "bg-teal-600",
   ];
 
-  const statusColors = {
-    "In Progress": "bg-yellow-100 text-yellow-700",
-    "Done": "bg-green-100 text-green-700",
-    "Delayed": "bg-red-100 text-red-700",
-    "Accepted": "bg-green-200 text-green-800",
-    "Rejected": "bg-red-200 text-red-800",
-  };
-
-  const cardColors = ["indigo", "blue", "purple", "pink", "teal", "orange"];
-
-const handleAddDept = async () => {
-  if (!newDeptName.trim() || !user?.team) {
-    alert("User team not available. Please log in again.");
-    return;
-  }
-
-  try {
-    setLoading(true);
-    const res = await fetch("http://localhost:5000/api/departments", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ name: newDeptName, team: user.team }),
-    });
-
-    if (!res.ok) {
-      const err = await res.json();
-      alert(err.message || "Failed to create department");
+  const handleAddDept = async () => {
+    const teamId = user?.team?._id || user?.team;
+    if (!newDeptName.trim() || !teamId) {
+      alert("User team not available. Please log in again.");
       return;
     }
 
-    const data = await res.json();
-    setDepartments((prev) => [...prev, data]);
-    setNewDeptName("");
-  } catch (error) {
-    console.error("Error adding department:", error);
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      setLoading(true);
+      const res = await fetch("http://localhost:5000/api/departments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name: newDeptName, team: teamId }),
+      });
 
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.message || "Failed to create department");
+        return;
+      }
+
+      const data = await res.json();
+      setDepartments((prev) => [...prev, data]);
+      setNewDeptName("");
+    } catch (error) {
+      console.error("Error adding department:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // ✅ Fetch Departments
   useEffect(() => {
     const fetchDepts = async () => {
+      const teamId = user?.team?._id || user?.team;
+      if (!teamId) return;
+
       try {
         const res = await fetch(
-          `http://localhost:5000/api/departments/${user?.team}`,
+          `http://localhost:5000/api/departments/${teamId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -95,17 +86,14 @@ const handleAddDept = async () => {
       }
     };
 
-    if (user?.team && token) {
+    if (user && token) {
       fetchDepts();
     }
   }, [user, token]);
 
-  // ✅ Task Actions
   const handleTaskAction = (taskId, action) => {
-    setTasks((prev) =>
-      prev.map((t) => (t.id === taskId ? { ...t, status: action } : t))
-    );
-    setOpenMenu(null);
+    console.log(`Task ${taskId} → ${action}`);
+    // later: API call to update task status
   };
 
   return (
@@ -173,7 +161,7 @@ const handleAddDept = async () => {
                     key={dept._id || i}
                     onClick={() => setSelectedDept(dept)}
                     className={`relative p-6 flex flex-col justify-between 
-                      bg-${cardColor}-600 text-white rounded-2xl shadow-md 
+                      ${cardColor} text-white rounded-2xl shadow-md 
                       hover:shadow-xl hover:-translate-y-1 cursor-pointer`}
                   >
                     <div className="flex items-center gap-4 mb-4">
@@ -200,7 +188,6 @@ const handleAddDept = async () => {
       ) : (
         /* Department Detail View */
         <div className="flex flex-col gap-8">
-          {/* Header */}
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-2xl font-bold text-gray-800">
@@ -213,112 +200,18 @@ const handleAddDept = async () => {
             </span>
           </div>
 
-          {/* Members Section */}
+          {/* Members Section (to be filled with API data later) */}
           <div>
             <h3 className="text-lg font-semibold text-gray-700 mb-4">
               Team Members
             </h3>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {members.map((m) => (
-                <div
-                  key={m.id}
-                  className="bg-white p-5 rounded-xl shadow hover:shadow-md transition"
-                >
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center font-bold text-indigo-700">
-                      {m.name.charAt(0)}
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-800">{m.name}</h4>
-                      <p className="text-sm text-gray-500">{m.role}</p>
-                    </div>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-indigo-600 h-2 rounded-full"
-                      style={{ width: `${m.progress}%` }}
-                    ></div>
-                  </div>
-                  <p className="text-sm text-gray-500 mt-2">
-                    {m.progress}% complete
-                  </p>
-                </div>
-              ))}
-            </div>
+            <p className="text-gray-500">⚠️ Hook up API for members here</p>
           </div>
 
-          {/* Tasks Section */}
+          {/* Tasks Section (to be filled with API data later) */}
           <div>
             <h3 className="text-lg font-semibold text-gray-700 mb-4">Tasks</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse bg-white shadow rounded-xl overflow-hidden">
-                <thead className="bg-gray-100 text-gray-700 text-sm">
-                  <tr>
-                    <th className="px-6 py-3">Task</th>
-                    <th className="px-6 py-3">Status</th>
-                    <th className="px-6 py-3">Deadline</th>
-                    <th className="px-6 py-3">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="text-gray-600 text-sm">
-                  {tasks.map((task) => (
-                    <tr key={task.id} className="border-b hover:bg-gray-50">
-                      <td className="px-6 py-4 font-medium">{task.title}</td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium ${statusColors[task.status]}`}
-                        >
-                          {task.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 flex items-center gap-2">
-                        <Clock className="w-4 h-4 text-gray-500" />
-                        {task.deadline}
-                      </td>
-                      <td className="px-6 py-4 flex items-center gap-3 relative">
-                        {/* Delete */}
-                        <button className="text-red-500 hover:text-red-700">
-                          <Trash2 className="w-5 h-5" />
-                        </button>
-
-                        {/* Dropdown */}
-                        <div className="relative">
-                          <button
-                            onClick={() =>
-                              setOpenMenu(openMenu === task.id ? null : task.id)
-                            }
-                            className="text-gray-500 hover:text-gray-700"
-                          >
-                            <MoreVertical className="w-5 h-5" />
-                          </button>
-
-                          {openMenu === task.id && (
-                            <div className="absolute right-0 mt-2 w-40 bg-white border rounded-lg shadow-lg z-10">
-                              <button
-                                onClick={() =>
-                                  handleTaskAction(task.id, "Accepted")
-                                }
-                                className="flex items-center gap-2 px-4 py-2 text-sm text-green-600 hover:bg-green-50 w-full text-left"
-                              >
-                                <CheckCircle className="w-4 h-4" /> Accept
-                              </button>
-                              <button
-                                onClick={() =>
-                                  handleTaskAction(task.id, "Rejected")
-                                }
-                                className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
-                              >
-                                <XCircle className="w-4 h-4" /> Reject
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <p className="text-gray-500">⚠️ Hook up API for tasks here</p>
           </div>
         </div>
       )}

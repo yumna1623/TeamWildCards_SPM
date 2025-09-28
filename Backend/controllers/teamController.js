@@ -42,18 +42,19 @@ export const createTeam = async (req, res) => {
     await adminUser.save();
 
     // 5. Respond
-    res.status(201).json({
-      message: "✅ Team created successfully",
-      token: generateToken(adminUser._id),
-      team,
-      admin: {
-        id: adminUser._id,
-        name: adminUser.name,
-        email: adminUser.email,
-        role: adminUser.role,
-        team: adminUser.team,
-      },
-    });
+   res.status(201).json({
+  message: "✅ Team created successfully",
+  token: generateToken(adminUser._id),
+  team,
+  user: {   // ✅ consistent with joinTeam & login
+    id: adminUser._id,
+    name: adminUser.name,
+    email: adminUser.email,
+    role: adminUser.role,
+    team: adminUser.team,   // ✅ send team id
+  },
+});
+
   } catch (err) {
     console.error("❌ Error creating team:", err);
     res.status(500).json({ message: err.message });

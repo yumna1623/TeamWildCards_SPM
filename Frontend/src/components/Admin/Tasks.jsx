@@ -1,5 +1,5 @@
-// src/components/admin/Tasks.jsx
 import { useState, useEffect } from "react";
+import axios from "axios";
 import {
   FileText,
   User,
@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 const Tasks = () => {
   const navigate = useNavigate();
 
+  const [departments, setDepartments] = useState([]);
   const [task, setTask] = useState({
     title: "",
     description: "",
@@ -28,23 +29,52 @@ const Tasks = () => {
   const [success, setSuccess] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  const handleSubmit = (e) => {
+  // fetch departments from backend
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const res = await axios.get("/api/departments", {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+        setDepartments(res.data);
+      } catch (err) {
+        console.error("Error fetching departments:", err);
+      }
+    };
+    fetchDepartments();
+  }, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Task Created:", task);
+    try {
+      await axios.post(
+        "/api/tasks",
+        {
+          title: task.title,
+          description: task.description,
+          memberName: task.memberName,
+          memberEmail: task.memberEmail,
+          deadline: task.deadline,
+          priority: task.priority,
+          departmentId: task.department,
+        },
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      );
 
-    setSuccess(true); // show success screen
-    setProgress(0); // reset progress
-
-    // reset form
-    setTask({
-      title: "",
-      description: "",
-      memberName: "",
-      memberEmail: "",
-      deadline: "",
-      priority: "Medium",
-      department: "",
-    });
+      setSuccess(true);
+      setProgress(0);
+      setTask({
+        title: "",
+        description: "",
+        memberName: "",
+        memberEmail: "",
+        deadline: "",
+        priority: "Medium",
+        department: "",
+      });
+    } catch (err) {
+      console.error("Error creating task:", err);
+    }
   };
 
   // Animate circle progress
@@ -52,7 +82,7 @@ const Tasks = () => {
     if (success) {
       let value = 0;
       const interval = setInterval(() => {
-        value += 2; // increase progress
+        value += 2;
         if (value > 100) {
           clearInterval(interval);
           value = 100;
@@ -63,7 +93,6 @@ const Tasks = () => {
     }
   }, [success]);
 
-  // Circle progress properties
   const radius = 40;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (progress / 100) * circumference;
@@ -73,20 +102,14 @@ const Tasks = () => {
       <div className="w-full max-w-4xl bg-white p-8 rounded-xl shadow-lg">
         {!success ? (
           <>
-            {/* Heading */}
             <h2 className="text-2xl font-bold text-indigo-800 mb-6 flex items-center gap-2">
               <ListTodo className="w-6 h-6 text-indigo-600" />
               Assign a New Task
             </h2>
 
-            {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Task Title */}
               <div>
-                <label
-                  htmlFor="taskTitle"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
+                <label htmlFor="taskTitle" className="block text-sm font-medium text-gray-700 mb-1">
                   Task Title
                 </label>
                 <div className="relative">
@@ -96,43 +119,30 @@ const Tasks = () => {
                     id="taskTitle"
                     placeholder="Enter task title"
                     value={task.title}
-                    onChange={(e) =>
-                      setTask({ ...task, title: e.target.value })
-                    }
+                    onChange={(e) => setTask({ ...task, title: e.target.value })}
                     className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-indigo-400 focus:outline-none transition"
                     required
                   />
                 </div>
               </div>
 
-              {/* Task Description */}
               <div>
-                <label
-                  htmlFor="taskDescription"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
+                <label htmlFor="taskDescription" className="block text-sm font-medium text-gray-700 mb-1">
                   Task Description
                 </label>
                 <textarea
                   id="taskDescription"
                   placeholder="Provide task details"
                   value={task.description}
-                  onChange={(e) =>
-                    setTask({ ...task, description: e.target.value })
-                  }
+                  onChange={(e) => setTask({ ...task, description: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-indigo-400 focus:outline-none transition"
                   rows="3"
                 />
               </div>
 
-              {/* Member Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Member Name */}
                 <div>
-                  <label
-                    htmlFor="memberName"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
+                  <label htmlFor="memberName" className="block text-sm font-medium text-gray-700 mb-1">
                     Member Name
                   </label>
                   <div className="relative">
@@ -142,21 +152,15 @@ const Tasks = () => {
                       id="memberName"
                       placeholder="Enter name"
                       value={task.memberName}
-                      onChange={(e) =>
-                        setTask({ ...task, memberName: e.target.value })
-                      }
+                      onChange={(e) => setTask({ ...task, memberName: e.target.value })}
                       className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-indigo-400 focus:outline-none transition"
                       required
                     />
                   </div>
                 </div>
 
-                {/* Member Email */}
                 <div>
-                  <label
-                    htmlFor="memberEmail"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
+                  <label htmlFor="memberEmail" className="block text-sm font-medium text-gray-700 mb-1">
                     Member Email
                   </label>
                   <div className="relative">
@@ -166,9 +170,7 @@ const Tasks = () => {
                       id="memberEmail"
                       placeholder="Enter email"
                       value={task.memberEmail}
-                      onChange={(e) =>
-                        setTask({ ...task, memberEmail: e.target.value })
-                      }
+                      onChange={(e) => setTask({ ...task, memberEmail: e.target.value })}
                       className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-indigo-400 focus:outline-none transition"
                       required
                     />
@@ -176,14 +178,9 @@ const Tasks = () => {
                 </div>
               </div>
 
-              {/* Deadline / Priority / Department */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Deadline */}
                 <div>
-                  <label
-                    htmlFor="deadline"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
+                  <label htmlFor="deadline" className="block text-sm font-medium text-gray-700 mb-1">
                     Deadline
                   </label>
                   <div className="relative">
@@ -192,20 +189,14 @@ const Tasks = () => {
                       type="date"
                       id="deadline"
                       value={task.deadline}
-                      onChange={(e) =>
-                        setTask({ ...task, deadline: e.target.value })
-                      }
+                      onChange={(e) => setTask({ ...task, deadline: e.target.value })}
                       className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-indigo-400 focus:outline-none transition"
                     />
                   </div>
                 </div>
 
-                {/* Priority */}
                 <div>
-                  <label
-                    htmlFor="priority"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
+                  <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-1">
                     Priority
                   </label>
                   <div className="relative">
@@ -213,9 +204,7 @@ const Tasks = () => {
                     <select
                       id="priority"
                       value={task.priority}
-                      onChange={(e) =>
-                        setTask({ ...task, priority: e.target.value })
-                      }
+                      onChange={(e) => setTask({ ...task, priority: e.target.value })}
                       className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm appearance-none focus:ring-1 focus:ring-indigo-400 focus:outline-none transition"
                     >
                       <option>High</option>
@@ -226,13 +215,8 @@ const Tasks = () => {
                   </div>
                 </div>
 
-                {/* Department */}
-                {/* Department Dropdown 👇 */}
                 <div>
-                  <label
-                    htmlFor="department"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
+                  <label htmlFor="department" className="block text-sm font-medium text-gray-700 mb-1">
                     Department
                   </label>
                   <div className="relative">
@@ -240,9 +224,7 @@ const Tasks = () => {
                     <select
                       id="department"
                       value={task.department}
-                      onChange={(e) =>
-                        setTask({ ...task, department: e.target.value })
-                      }
+                      onChange={(e) => setTask({ ...task, department: e.target.value })}
                       className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-indigo-400 focus:outline-none transition"
                       required
                     >
@@ -257,7 +239,6 @@ const Tasks = () => {
                 </div>
               </div>
 
-              {/* Submit */}
               <button
                 type="submit"
                 className="w-full py-3 mt-6 bg-indigo-600 text-white text-sm font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition"
@@ -267,7 +248,6 @@ const Tasks = () => {
             </form>
           </>
         ) : (
-          // ✅ Success Screen
           <div className="flex flex-col items-center justify-center py-12 mt-18">
             <div className="relative w-28 h-28 mb-6">
               <svg className="w-full h-full transform -rotate-90">

@@ -1,15 +1,17 @@
 import { useState } from "react";
 import { Users, Key, Mail, User, Lock, Network, XCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext"; // ✅ use context
 
 const CreateTeam = () => {
   const [teamName, setTeamName] = useState("");
   const [leaderName, setLeaderName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");   // ✅ admin password
+  const [password, setPassword] = useState("");   
   const [passcode, setPasscode] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
+const { login } = useAuth(); // ✅ use login
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,29 +24,30 @@ const CreateTeam = () => {
           teamName,
           leaderName,
           email,
-          password,   // ✅ included
+          password,
           passcode,
         }),
       });
 
       const data = await response.json();
 
-      if (response.ok) {
-        localStorage.setItem("token", data.token);
+     if (response.ok) {
+  // ✅ Call login instead of manual localStorage
+  login(data.user, data.token);
 
-        setSuccessMessage("✅ Team created successfully!");
-        console.log("Saved in DB:", data.team);
+  setSuccessMessage("✅ Team created successfully!");
+  console.log("Saved in DB:", data.team);
 
-        // clear form
-        setTeamName("");
-        setLeaderName("");
-        setEmail("");
-        setPassword("");
-        setPasscode("");
+  // clear form
+  setTeamName("");
+  setLeaderName("");
+  setEmail("");
+  setPassword("");
+  setPasscode("");
 
-        // navigate to dashboard after delay
-        setTimeout(() => navigate("/AdminDashboard"), 1000);
-      } else {
+  setTimeout(() => navigate("/AdminDashboard"), 1000);
+}
+ else {
         alert("❌ " + (data.message || "Something went wrong"));
       }
     } catch (error) {
@@ -66,6 +69,11 @@ const CreateTeam = () => {
     setPasscode("");
     setSuccessMessage("");
   };
+
+  
+
+
+
 
   return (
     <div className="flex items-center justify-center min-h-screen w-full font-sans relative overflow-hidden">

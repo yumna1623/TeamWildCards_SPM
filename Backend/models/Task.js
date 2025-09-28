@@ -1,15 +1,16 @@
+// backend/models/Task.js
 import mongoose from "mongoose";
 
 const taskSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: String,
-  status: { type: String, enum: ["todo", "in-progress", "done"], default: "todo" },
-  priority: { type: String, enum: ["low", "medium", "high"], default: "medium" },
-  dueDate: Date,
-  assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  team: { type: mongoose.Schema.Types.ObjectId, ref: "Team", required: true },
-  department: { type: mongoose.Schema.Types.ObjectId, ref: "Department" } // 👈 NEW
+  memberName: String,
+  memberEmail: String,
+  deadline: Date,
+  priority: { type: String, enum: ["High", "Medium", "Low"], default: "Medium" },
+  department: { type: mongoose.Schema.Types.ObjectId, ref: "Department" },
+  status: { type: String, enum: ["Pending", "In Progress", "Done"], default: "Pending" },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
 }, { timestamps: true });
 
-const Task = mongoose.model("Task", taskSchema);
-export default Task;
+export default mongoose.model("Task", taskSchema);
