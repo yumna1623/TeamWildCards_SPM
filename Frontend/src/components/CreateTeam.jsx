@@ -11,23 +11,27 @@ const CreateTeam = () => {
   const [passcode, setPasscode] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
-const { login } = useAuth(); // ✅ use login
+const { login, token } = useAuth(); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:5000/api/team/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          teamName,
-          leaderName,
-          email,
-          password,
-          passcode,
-        }),
-      });
+    const response = await fetch("http://localhost:5000/api/team/create", {
+  method: "POST",
+  headers: { 
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,  // 👈 send token
+  },
+  body: JSON.stringify({
+    teamName,
+    leaderName,
+    email,
+    password,
+    passcode,
+  }),
+});
+
 
       const data = await response.json();
 

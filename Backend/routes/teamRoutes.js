@@ -1,14 +1,19 @@
 import express from "express";
-import protect from "../middleware/authMiddleware.js";
+import { protect, adminOnly } from "../middleware/authMiddleware.js";
 import { createTeam, getAdminDashboard, joinTeam } from "../controllers/teamController.js";
 import { getUserDashboard } from "../controllers/userController.js";
+import { getTeamMembers } from "../controllers/teamController.js";
+
+
 
 const router = express.Router();
 
-router.post("/create", createTeam);
+// ✅ No adminOnly here → creating a team will make the user admin
+router.post("/create", protect, createTeam);  
 router.post("/join", joinTeam);
-router.get("/admin-dashboard", protect, getAdminDashboard); // ✅ protect added
+router.get("/admin-dashboard", protect, adminOnly, getAdminDashboard); 
 router.get("/user-dashboard", protect, getUserDashboard);
+router.get("/members", protect, getTeamMembers);
 
 
 export default router;

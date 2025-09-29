@@ -1,26 +1,21 @@
-// import express from "express";
-// import protect from "../middleware/authMiddleware.js";
-// import { createTask, getTasks } from "../controllers/taskController.js";
-
-// const router = express.Router();
-// router.post("/", protect, createTask);
-// router.get("/", protect, getTasks);
-
-// export default router;
+// backend/routes/taskRoutes.js
 import express from "express";
-import { createTask, getTasks, updateTaskStatus } from "../controllers/taskController.js";
-import protect from "../middleware/authMiddleware.js";
-
+import {
+  createTask,
+  getTasks,
+  updateTaskStatus,
+} from "../controllers/taskController.js";
+import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Admin creates a task
+// ✅ Only admin can create a task
 router.post("/", protect, createTask);
 
-// User fetches tasks assigned to them
+// ✅ Both admin & members can fetch tasks (filtered in controller)
 router.get("/", protect, getTasks);
 
-// User updates task status
+// ✅ Members update their task status
 router.put("/:id", protect, updateTaskStatus);
 
 export default router;

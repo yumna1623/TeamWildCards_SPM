@@ -100,6 +100,24 @@ export const joinTeam = async (req, res) => {
 };
 
 
+export const getTeamMembers = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user || !user.team) {
+      return res.status(404).json({ message: "User or team not found" });
+    }
+
+    const team = await Team.findById(user.team).populate("members", "name email");
+    if (!team) {
+      return res.status(404).json({ message: "Team not found" });
+    }
+
+    res.json(team.members);
+  } catch (err) {
+    console.error("❌ Error fetching members:", err);
+    res.status(500).json({ message: err.message });
+  }
+};
 
 // -------------------------------------------------------- Get Admin Dashboard Info
 export const getAdminDashboard = async (req, res) => {

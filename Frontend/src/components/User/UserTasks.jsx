@@ -1,3 +1,4 @@
+// src/components/User/UserTasks.jsx
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { ChevronDown, ChevronUp } from "lucide-react";
@@ -14,6 +15,7 @@ const UserTasks = () => {
         const res = await axios.get("/api/tasks", {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
+        console.log("Fetched tasks:", res.data); // 👈 debugging log
         setTasks(res.data);
       } catch (err) {
         console.error("Error fetching tasks:", err);
@@ -69,7 +71,9 @@ const UserTasks = () => {
         { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
       setTasks((prev) =>
-        prev.map((task) => (task._id === id ? { ...task, status: newStatus } : task))
+        prev.map((task) =>
+          task._id === id ? { ...task, status: newStatus } : task
+        )
       );
     } catch (err) {
       console.error("Error updating task:", err);
@@ -118,7 +122,9 @@ const UserTasks = () => {
             <button
               onClick={() => handleSort("title")}
               className={`px-4 py-2 text-sm rounded-full transition-all duration-200 shadow-sm ${
-                sortKey === "title" ? "bg-gray-800 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                sortKey === "title"
+                  ? "bg-gray-800 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
             >
               Title
@@ -126,7 +132,9 @@ const UserTasks = () => {
             <button
               onClick={() => handleSort("status")}
               className={`px-4 py-2 text-sm rounded-full transition-all duration-200 shadow-sm ${
-                sortKey === "status" ? "bg-gray-800 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                sortKey === "status"
+                  ? "bg-gray-800 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
             >
               Status
@@ -134,7 +142,9 @@ const UserTasks = () => {
             <button
               onClick={() => handleSort("deadline")}
               className={`px-4 py-2 text-sm rounded-full transition-all duration-200 shadow-sm ${
-                sortKey === "deadline" ? "bg-gray-800 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                sortKey === "deadline"
+                  ? "bg-gray-800 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
             >
               Due Date
@@ -145,57 +155,82 @@ const UserTasks = () => {
         <div className="w-full h-[2px] bg-gray-200 rounded-full mb-8"></div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sortedTasks.map((task) => (
-            <div
-              key={task._id}
-              className="p-6 rounded-xl bg-white shadow-md hover:shadow-lg transition transform hover:-translate-y-1"
-            >
-              <div className="flex items-start justify-between">
-                <span className="text-lg font-bold text-gray-800">{task.title}</span>
-                <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusTextStyle(task.status)}`}>
-                  {task.status}
-                </span>
-              </div>
-
-              <div className="text-sm text-gray-500 mt-1">
-                {task.department?.name && <span>Department: {task.department.name}</span>}
-              </div>
-
-              <div className="flex items-center justify-between my-4 text-sm text-gray-500">
-                <span>📅 Due: {task.deadline?.split("T")[0]}</span>
-                <div className="relative">
-                  <button
-                    onClick={() => toggleDropdown(task._id)}
-                    className="flex items-center text-indigo-600 hover:underline text-xs font-medium"
+          {sortedTasks.length === 0 ? (
+            <p className="text-gray-600 text-center col-span-full">
+              No tasks assigned to you yet.
+            </p>
+          ) : (
+            sortedTasks.map((task) => (
+              <div
+                key={task._id}
+                className="p-6 rounded-xl bg-white shadow-md hover:shadow-lg transition transform hover:-translate-y-1"
+              >
+                <div className="flex items-start justify-between">
+                  <span className="text-lg font-bold text-gray-800">
+                    {task.title || "Untitled"}
+                  </span>
+                  <span
+                    className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusTextStyle(
+                      task.status
+                    )}`}
                   >
-                    Update Status
-                    {openDropdown === task._id ? <ChevronUp className="w-3 h-3 ml-1" /> : <ChevronDown className="w-3 h-3 ml-1" />}
-                  </button>
-                  {openDropdown === task._id && (
-                    <div className="absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
-                      <div className="py-1">
-                        {["In Progress", "Done", "Pending"].map((status) => (
-                          <button
-                            key={status}
-                            onClick={() => handleUpdateStatus(task._id, status)}
-                            className="block px-4 py-2 text-sm text-gray-800 font-medium hover:bg-gray-100 w-full text-left"
-                          >
-                            {status}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                    {task.status || "No Status"}
+                  </span>
+                </div>
+
+                <div className="text-sm text-gray-500 mt-1">
+                  {task.department?.name && (
+                    <span>Department: {task.department.name}</span>
                   )}
                 </div>
-              </div>
 
-              <div className="h-3 bg-gray-200 rounded-full mt-4 overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all duration-500 ease-in-out ${getStatusLineColor(task.status)} ${getStatusProgress(task.status)}`}
-                />
+                <div className="flex items-center justify-between my-4 text-sm text-gray-500">
+                  <span>
+                    📅 Due:{" "}
+                    {task.deadline
+                      ? task.deadline.split("T")[0]
+                      : "No deadline"}
+                  </span>
+                  <div className="relative">
+                    <button
+                      onClick={() => toggleDropdown(task._id)}
+                      className="flex items-center text-indigo-600 hover:underline text-xs font-medium"
+                    >
+                      Update Status
+                      {openDropdown === task._id ? (
+                        <ChevronUp className="w-3 h-3 ml-1" />
+                      ) : (
+                        <ChevronDown className="w-3 h-3 ml-1" />
+                      )}
+                    </button>
+                    {openDropdown === task._id && (
+                      <div className="absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
+                        <div className="py-1">
+                          {["In Progress", "Done", "Pending"].map((status) => (
+                            <button
+                              key={status}
+                              onClick={() => handleUpdateStatus(task._id, status)}
+                              className="block px-4 py-2 text-sm text-gray-800 font-medium hover:bg-gray-100 w-full text-left"
+                            >
+                              {status}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="h-3 bg-gray-200 rounded-full mt-4 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ease-in-out ${getStatusLineColor(
+                      task.status
+                    )} ${getStatusProgress(task.status)}`}
+                  />
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>

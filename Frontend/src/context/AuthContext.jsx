@@ -1,13 +1,12 @@
-// src/context/AuthContext.jsx
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
-const AuthContext = createContext(null);
+const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);   // user info (decoded from token)
-  const [token, setToken] = useState(null); // JWT token
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
 
-  // Load from localStorage on refresh
+  // 👇 Load token & user from localStorage on refresh
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
@@ -16,19 +15,18 @@ export const AuthProvider = ({ children }) => {
     if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
 
-  // Save to localStorage when user logs in
   const login = (userData, jwtToken) => {
     setUser(userData);
     setToken(jwtToken);
-    localStorage.setItem("token", jwtToken);
     localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("token", jwtToken);
   };
 
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem("token");
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
   };
 
   return (
@@ -38,5 +36,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// ✅ This is the hook you were missing
 export const useAuth = () => useContext(AuthContext);
