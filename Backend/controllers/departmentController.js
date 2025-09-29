@@ -20,16 +20,26 @@ export const createDepartment = async (req, res) => {
   }
 };
 
-// controllers/departmentController.js
 export const getDepartments = async (req, res) => {
   try {
-    const teamId = req.user.team; // get team from authenticated user
+    console.log("🔍 Logged-in user:", req.user);
+
+    // ✅ If you kept populate("team") in middleware
+    const teamId = req.user.team._id;  
+
+    // ✅ If you removed populate in middleware, then keep it as:
+    // const teamId = req.user.team;
+
     const departments = await Department.find({ team: teamId })
       .populate("tasks")
       .populate("members");
+
     res.json(departments);
   } catch (error) {
     console.error("Error fetching departments:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
+
+
+

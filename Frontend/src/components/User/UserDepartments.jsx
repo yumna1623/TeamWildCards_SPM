@@ -1,4 +1,3 @@
-// src/components/User/UserDepartments.jsx
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Layers, Clock } from "lucide-react";
@@ -28,16 +27,14 @@ const UserDepartments = () => {
     Pending: "bg-gray-200 text-gray-600",
   };
 
-  // ✅ Fetch departments from backend
+  // ✅ Fetch only team departments
   useEffect(() => {
     const fetchDepts = async () => {
-      if (!user?.team) return;
       try {
+        if (!user?.team) return;
         const res = await fetch(
-          `http://localhost:5000/api/departments/${user.team._id || user.team}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          `http://localhost:5000/api/departments?teamId=${user.team._id || user.team}`,
+          { headers: { Authorization: `Bearer ${token}` } }
         );
         if (!res.ok) throw new Error("Failed to fetch departments");
         const data = await res.json();
@@ -46,13 +43,11 @@ const UserDepartments = () => {
         console.error("Error fetching departments:", err);
       }
     };
-
     fetchDepts();
   }, [user, token]);
 
   return (
     <div className="p-6 bg-[#C4D9FF] min-h-screen relative overflow-hidden before:absolute before:inset-0 before:bg-[linear-gradient(to_right,#E0E7FF_1px,transparent_1px),linear-gradient(to_bottom,#E0E7FF_1px,transparent_1px)] before:bg-[size:20px_20px]">
-      {/* Back button */}
       {selectedDept && (
         <button
           onClick={() => setSelectedDept(null)}
@@ -62,17 +57,12 @@ const UserDepartments = () => {
         </button>
       )}
 
-      {/* Department list */}
       {!selectedDept ? (
         <div className="z-10 relative">
           <h2 className="text-4xl font-extrabold text-gray-900 mb-4 flex items-center gap-2">
             <Layers className="w-8 h-8 text-indigo-600" />
             Your Departments
           </h2>
-          <p className="text-gray-500 mb-8">
-            Click on a department to view tasks and members.
-          </p>
-
           {departments.length === 0 ? (
             <p className="text-gray-600">No departments found in your team.</p>
           ) : (
@@ -97,9 +87,7 @@ const UserDepartments = () => {
           )}
         </div>
       ) : (
-        // ✅ Department Details
         <div className="flex flex-col gap-8 z-10 relative">
-          {/* Department header */}
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold text-gray-800">
               {selectedDept.name}
@@ -121,15 +109,8 @@ const UserDepartments = () => {
                     key={m._id}
                     className="bg-white p-5 rounded-xl shadow hover:shadow-md transition"
                   >
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center font-bold text-indigo-700">
-                        {m.name?.charAt(0)}
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-gray-800">{m.name}</h4>
-                        <p className="text-sm text-gray-500">{m.role}</p>
-                      </div>
-                    </div>
+                    <h4 className="font-semibold text-gray-800">{m.name}</h4>
+                    <p className="text-sm text-gray-500">{m.role}</p>
                   </div>
                 ))}
               </div>
