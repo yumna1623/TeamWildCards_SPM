@@ -3,19 +3,19 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
-const UserTasks = () => {
+const UserTasks = ({ newTask }) => {
   const [tasks, setTasks] = useState([]);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [sortKey, setSortKey] = useState(null);
   const [sortDirection, setSortDirection] = useState("asc");
 
+  // Fetch tasks assigned to logged-in user
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const res = await axios.get("/api/tasks", {
+        const res = await axios.get("http://localhost:5000/api/tasks/my", {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
-        console.log("Fetched tasks:", res.data); // 👈 debugging log
         setTasks(res.data);
       } catch (err) {
         console.error("Error fetching tasks:", err);
@@ -23,6 +23,13 @@ const UserTasks = () => {
     };
     fetchTasks();
   }, []);
+
+  // Add newly created task to the list immediately
+  useEffect(() => {
+    if (newTask) {
+      setTasks((prev) => [newTask, ...prev]);
+    }
+  }, [newTask]);
 
   const getStatusLineColor = (status) => {
     switch (status) {
@@ -65,15 +72,15 @@ const UserTasks = () => {
 
   const handleUpdateStatus = async (id, newStatus) => {
     try {
-      await axios.put(
-        `/api/tasks/${id}`,
+      const res = await axios.put(
+        `http://localhost:5000/api/tasks/${id}`,
         { status: newStatus },
         { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
+
+      // Update task in state
       setTasks((prev) =>
-        prev.map((task) =>
-          task._id === id ? { ...task, status: newStatus } : task
-        )
+        prev.map((task) => (task._id === id ? res.data : task))
       );
     } catch (err) {
       console.error("Error updating task:", err);
@@ -209,7 +216,9 @@ const UserTasks = () => {
                           {["In Progress", "Done", "Pending"].map((status) => (
                             <button
                               key={status}
-                              onClick={() => handleUpdateStatus(task._id, status)}
+                              onClick={() =>
+                                handleUpdateStatus(task._id, status)
+                              }
                               className="block px-4 py-2 text-sm text-gray-800 font-medium hover:bg-gray-100 w-full text-left"
                             >
                               {status}

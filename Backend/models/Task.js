@@ -38,13 +38,17 @@ const taskSchema = new mongoose.Schema(
       enum: ["Pending", "In Progress", "Done"],
       default: "Pending",
     },
+    decision: {
+      type: String,
+      enum: ["Accepted", "Rejected", "Pending"],
+      default: "Pending",
+    },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-
-    // 🔑 New fields
     assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     team: { type: mongoose.Schema.Types.ObjectId, ref: "Team" },
   },
   { timestamps: true }
 );
+
 
 export default mongoose.model("Task", taskSchema);

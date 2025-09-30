@@ -5,7 +5,9 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import teamRoutes from "./routes/teamRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js";
-import departmentRoutes from "./routes/departmentRoutes.js"; // 👈 add this
+import departmentRoutes from "./routes/departmentRoutes.js"; 
+import userRoutes from "./routes/userRoutes.js";
+
 
 
 dotenv.config();
@@ -19,6 +21,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/team", teamRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/departments", departmentRoutes); // 👈 mount here
+app.use("/api/users", userRoutes);
 
 
 app.get("/", (req, res) => res.send("API is running..."));

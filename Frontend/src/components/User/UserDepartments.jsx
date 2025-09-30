@@ -33,7 +33,9 @@ const UserDepartments = () => {
       try {
         if (!user?.team) return;
         const res = await fetch(
-          `http://localhost:5000/api/departments?teamId=${user.team._id || user.team}`,
+          `http://localhost:5000/api/departments?teamId=${
+            user.team._id || user.team
+          }`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         if (!res.ok) throw new Error("Failed to fetch departments");
@@ -137,7 +139,11 @@ const UserDepartments = () => {
                     {selectedDept.tasks.map((task) => (
                       <tr key={task._id} className="border-b hover:bg-gray-50">
                         <td className="px-6 py-4 font-medium">{task.title}</td>
-                        <td className="px-6 py-4">{task.assignedTo}</td>
+                        <td className="px-6 py-4">
+                          {task.assignedTo
+                            ? `${task.assignedTo.name} (${task.assignedTo.email})`
+                            : "N/A"}
+                        </td>
                         <td className="px-6 py-4">
                           <span
                             className={`px-3 py-1 rounded-full text-xs font-medium ${

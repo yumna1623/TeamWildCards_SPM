@@ -1,3 +1,4 @@
+// src/components/Admin/Tasks.jsx
 import { useState, useEffect } from "react";
 import axios from "axios";
 import {
@@ -11,28 +12,30 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
-const Tasks = () => {
+const Tasks = ({ onTaskCreated }) => {
   const [departments, setDepartments] = useState([]);
   const [members, setMembers] = useState([]);
   const [task, setTask] = useState({
     title: "",
     description: "",
-    assignedTo: "", // ✅ backend expects this
+    assignedTo: "",
     deadline: "",
     priority: "Medium",
     department: "",
+    status: "Pending",
   });
   const [success, setSuccess] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  // ✅ Fetch team members for dropdown
+  // Fetch team members
   useEffect(() => {
     const fetchMembers = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:5000/api/team/members", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await axios.get(
+          "http://localhost:5000/api/team/members",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
         setMembers(res.data);
       } catch (err) {
         console.error("Error fetching members:", err);
@@ -41,7 +44,7 @@ const Tasks = () => {
     fetchMembers();
   }, []);
 
-  // ✅ Fetch only team departments
+  // Fetch team departments
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
@@ -61,15 +64,16 @@ const Tasks = () => {
     fetchDepartments();
   }, []);
 
-  // ✅ Submit new task
+  // Handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(
+      const res = await axios.post(
         "http://localhost:5000/api/tasks",
         task,
         { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
+
       setSuccess(true);
       setProgress(0);
       setTask({
@@ -79,13 +83,18 @@ const Tasks = () => {
         deadline: "",
         priority: "Medium",
         department: "",
+        status: "Pending",
       });
+
+      // Notify parent to update task list
+      if (onTaskCreated) onTaskCreated(res.data.task);
+
     } catch (err) {
       console.error("Error creating task:", err);
     }
   };
 
-  // ✅ Success animation
+  // Success animation
   useEffect(() => {
     if (success) {
       let value = 0;
@@ -149,33 +158,31 @@ const Tasks = () => {
                 />
               </div>
 
-              {/* Assign To Member Dropdown */}
-           {/* Assign To (Member) */}
-<div>
-  <label className="block text-sm font-medium text-gray-700 mb-1">
-    Assign To Member
-  </label>
-  <div className="relative">
-    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-    <select
-      value={task.assignedTo}
-      onChange={(e) =>
-        setTask({ ...task, assignedTo: e.target.value })
-      }
-      className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm appearance-none"
-      required
-    >
-      <option value="">Select member</option>
-      {members.map((member) => (
-        <option key={member._id} value={member._id}>
-          {member.name} ({member.email})
-        </option>
-      ))}
-    </select>
-    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-  </div>
-</div>
-
+              {/* Assign To Member */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Assign To Member
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <select
+                    value={task.assignedTo}
+                    onChange={(e) =>
+                      setTask({ ...task, assignedTo: e.target.value })
+                    }
+                    className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm appearance-none"
+                    required
+                  >
+                    <option value="">Select member</option>
+                    {members.map((member) => (
+                      <option key={member._id} value={member._id}>
+                        {member.name} ({member.email})
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
 
               {/* Department Dropdown */}
               <div>
