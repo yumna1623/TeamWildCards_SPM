@@ -3,6 +3,7 @@ import express from "express";
 import {
   createTask,
   getMyTasks,
+  getTeamTasks,
   updateTaskStatus,
   
 } from "../controllers/taskController.js";
@@ -25,5 +26,8 @@ router.get("/", protect, getMyTasks);
 
 // User updates task status
 router.put("/:id/status", protect, updateTaskStatus);
+
+router.get("/team/:teamId", protect, getTeamTasks);
+
 
 export default router;

@@ -90,25 +90,20 @@ export const updateTaskStatus = async (req, res) => {
 };
 
 
-// Update task status (only by assigned user)
-// export const updateTaskStatus = async (req, res) => {
-//   try {
-//     const task = await Task.findById(req.params.id);
-//     if (!task) return res.status(404).json({ message: "Task not found" });
+export const getTeamTasks = async (req, res) => {
+  try {
+    const { teamId } = req.params;
 
-//     if (task.assignedTo.toString() !== req.user._id.toString()) {
-//       return res.status(403).json({ message: "Not authorized to update this task" });
-//     }
+    const tasks = await Task.find({ team: teamId })
+      .populate("assignedTo", "name email");
 
-//     task.status = req.body.status || task.status;
-//     await task.save();
+    res.json(tasks);
+  } catch (error) {
+    console.error("Error fetching team tasks:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
-//     res.json(task);
-//   } catch (err) {
-//     console.error("Error updating task status:", err);
-//     res.status(500).json({ message: err.message });
-//   }
-// };
 
 
 

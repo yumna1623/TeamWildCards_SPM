@@ -23,12 +23,8 @@ const SideBar = ({ adminData, activeTab, setActiveTab, setShowTaskModal }) => {
         <h2 className="text-2xl font-bold text-indigo-700">
           {adminData.teamName}
         </h2>
-        <p className="mt-2 text-sm font-medium">
-          {adminData.leader?.name}
-        </p>
-        <p className="text-xs text-gray-500">
-          {adminData.leader?.email}
-        </p>
+        <p className="mt-2 text-sm font-medium">{adminData.leader?.name}</p>
+        <p className="text-xs text-gray-500">{adminData.leader?.email}</p>
         <p className="mt-4 text-sm">
           Team Members:{" "}
           <span className="font-semibold text-indigo-600">
@@ -38,6 +34,7 @@ const SideBar = ({ adminData, activeTab, setActiveTab, setShowTaskModal }) => {
 
         {/* Navigation */}
         <nav className="mt-8 space-y-3">
+          {/* Departments */}
           <button
             onClick={() => setActiveTab("departments")}
             className={`flex items-center gap-3 px-4 py-2 rounded-md w-full text-left transition ${
@@ -54,7 +51,7 @@ const SideBar = ({ adminData, activeTab, setActiveTab, setShowTaskModal }) => {
             <button
               onClick={toggleTaskDropdown}
               className={`flex items-center justify-between gap-3 px-4 py-2 rounded-md w-full text-left transition ${
-                activeTab.startsWith("task")
+                activeTab.startsWith("task") || activeTab === "viewTasks"
                   ? "bg-indigo-100 text-indigo-700 font-semibold"
                   : "hover:bg-gray-100"
               }`}
@@ -68,8 +65,11 @@ const SideBar = ({ adminData, activeTab, setActiveTab, setShowTaskModal }) => {
                 <ChevronDown className="w-4 h-4" />
               )}
             </button>
+
+            {/* Dropdown Menu */}
             {showTaskDropdown && (
               <div className="ml-6 mt-2 space-y-2">
+                {/* Create Task */}
                 <button
                   onClick={() => {
                     setActiveTab("tasks");
@@ -79,10 +79,22 @@ const SideBar = ({ adminData, activeTab, setActiveTab, setShowTaskModal }) => {
                 >
                   Create Task
                 </button>
+
+                {/* View Tasks */}
+                <button
+                  onClick={() => {
+                    setActiveTab("viewTasks");
+                    setShowTaskModal(false);
+                  }}
+                  className="flex items-center gap-3 px-4 py-2 rounded-md w-full text-left text-sm transition hover:bg-gray-50"
+                >
+                  View Tasks
+                </button>
               </div>
             )}
           </div>
 
+          {/* Leaderboard */}
           <button
             onClick={() => setActiveTab("leaderboard")}
             className={`flex items-center gap-3 px-4 py-2 rounded-md w-full text-left transition ${
