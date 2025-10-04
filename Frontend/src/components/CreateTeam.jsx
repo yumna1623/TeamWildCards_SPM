@@ -21,7 +21,7 @@ const { login, token } = useAuth();
   method: "POST",
   headers: { 
     "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,  // 👈 send token
+    // Authorization: `Bearer ${token}`,  // 👈 send token
   },
   body: JSON.stringify({
     teamName,

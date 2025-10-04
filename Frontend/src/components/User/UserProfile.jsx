@@ -51,22 +51,24 @@ const UserProfile = () => {
   }, [user]);
 
   // Fetch tasks assigned to user email
-  useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        if (!user?.email) return;
-        const res = await axios.get(
-          `http://localhost:5000/api/tasks?assignedTo=${user.email}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setTasks(Array.isArray(res.data) ? res.data : []);
-      } catch (err) {
-        console.error("Error fetching tasks:", err);
-        setTasks([]);
-      }
-    };
-    fetchTasks();
-  }, [user, token]);
+ // Fetch tasks assigned to logged-in user
+useEffect(() => {
+  const fetchTasks = async () => {
+    try {
+      const res = await axios.get(
+        "http://localhost:5000/api/tasks/my",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setTasks(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error("Error fetching tasks:", err);
+      setTasks([]);
+    }
+  };
+
+  if (user && token) fetchTasks();
+}, [user, token]);
+
 
   const toggleDropdown = (id) => setOpenDropdown(openDropdown === id ? null : id);
 

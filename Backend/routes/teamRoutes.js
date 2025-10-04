@@ -9,7 +9,7 @@ import { getTeamMembers } from "../controllers/teamController.js";
 const router = express.Router();
 
 // ✅ No adminOnly here → creating a team will make the user admin
-router.post("/create", protect, createTeam);  
+router.post("/create", createTeam);  
 router.post("/join", joinTeam);
 router.get("/admin-dashboard", protect, adminOnly, getAdminDashboard); 
 router.get("/user-dashboard", protect, getUserDashboard);
