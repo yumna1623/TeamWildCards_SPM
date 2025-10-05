@@ -1,5 +1,5 @@
-import Task from "../models/Task.js";
 import User from "../models/User.js";
+import Task from "../models/Task.js";
 import Team from "../models/Team.js";
 import Department from "../models/Department.js";
 

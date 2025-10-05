@@ -1,5 +1,7 @@
 import User from "../models/User.js";
+import Team from "../models/Team.js";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 
 // ------------------------------------------------------------ Generate JWT
 const generateToken = (id) => {
@@ -37,27 +39,52 @@ export const register = async (req, res) => {
 };
 
 // ------------------------------------------------------------ Login User
-export const login = async (req, res) => {
-  const { email, password } = req.body;
 
+
+
+
+export const loginWithPasscode = async (req, res) => {
   try {
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: "User not found" });
+    const { email, passcode } = req.body;
+    console.log("👉 Incoming login:", { email, passcode });
 
-    const isMatch = await user.matchPassword(password);
-    if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
+    // Find user by email
+    const user = await User.findOne({ email }).populate("team");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
+    let isMatch = false;
+
+    if (user.role === "admin") {
+      // ✅ Admin: compare with password
+      isMatch = await bcrypt.compare(passcode, user.password);
+    } else {
+      // ✅ Member: compare with team passcode (stored in Team collection)
+      if (user.team && user.team.passcode) {
+        isMatch = await bcrypt.compare(passcode, user.team.passcode);
+      }
+    }
+
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    const token = generateToken(user._id);
     res.json({
-      token: generateToken(user._id),
+      token,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
-        team: user.team, // ✅ make sure this is sent
+        team: user.team ? user.team._id : null,
       },
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error("❌ Login error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 };
+
+

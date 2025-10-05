@@ -1,80 +1,92 @@
+// src/components/Admin/Leaderboard.jsx
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
+import { Trophy, Check, Clock } from "lucide-react";
 
 const AdminLeaderboard = () => {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchBoard = async () => {
       if (!token) return;
-      const res = await fetch("http://localhost:5000/api/tasks/leaderboard", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) return;
-      const json = await res.json();
-      setData(json);
+      setLoading(true);
+
+      try {
+        const res = await fetch(
+          `http://localhost:5000/api/tasks/leaderboard?teamId=${user.team}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (!res.ok) throw new Error("Failed to fetch leaderboard");
+        const json = await res.json();
+        setData(json);
+      } catch (err) {
+        console.error("Leaderboard fetch error:", err);
+      } finally {
+        setLoading(false);
+      }
     };
+
     fetchBoard();
-  }, [token]);
+  }, [token, user]);
 
-  // create aggregated pie data
-  const totals = data.reduce((acc, cur) => {
-    acc.completed += cur.completed;
-    acc.delayed += cur.delayed;
-    acc.pending += cur.pending;
-    return acc;
-  }, { completed: 0, delayed: 0, pending: 0 });
+  if (loading) return <p className="p-6 text-gray-500">Loading leaderboard...</p>;
+  if (!data.length) return <p className="p-6 text-gray-500">No leaderboard data available.</p>;
 
-  const chartData = [
-    { name: "Completed", value: totals.completed },
-    { name: "Delayed", value: totals.delayed },
-    { name: "Pending", value: totals.pending },
-  ];
-
-  const COLORS = ["#4ade80", "#f97316", "#60a5fa"];
+  const top = data[0];
 
   return (
-    <div className="p-6 bg-gray-50 rounded-xl">
-      <h2 className="text-2xl font-bold mb-4">Leaderboard & Analytics</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <table className="w-full bg-white rounded">
-            <thead className="bg-indigo-600 text-white">
-              <tr>
-                <th className="p-3">Member</th>
-                <th className="p-3">Completed</th>
-                <th className="p-3">Delayed</th>
-                <th className="p-3">Pending</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((m, idx) => (
-                <tr key={m.userId} className="border-b">
-                  <td className="p-3">{m.name}</td>
-                  <td className="p-3 text-green-600 font-semibold">{m.completed}</td>
-                  <td className="p-3 text-orange-500 font-semibold">{m.delayed}</td>
-                  <td className="p-3 text-blue-600 font-semibold">{m.pending}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+    <div className="p-6 bg-[#F3F4F6] min-h-screen rounded-xl">
+      <div className="mb-6 flex items-center gap-3">
+        <Trophy className="w-7 h-7 text-indigo-700" />
+        <h2 className="text-2xl font-bold text-gray-800">Team Leaderboard</h2>
+      </div>
 
-        <div className="h-72">
-          <ResponsiveContainer>
-            <PieChart>
-              <Pie data={chartData} dataKey="value" outerRadius={80} label>
-                {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
+      {/* Top performer */}
+      {top && (
+        <div className="bg-white p-5 rounded-xl shadow mb-6 flex items-center gap-6">
+          <div className="w-20 h-20 rounded-full bg-indigo-600 text-white flex items-center justify-center text-2xl font-bold">
+            {top.name?.charAt(0) || "U"}
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Top Performer</p>
+            <h3 className="text-2xl font-bold">{top.name}</h3>
+            <p className="text-sm text-gray-500">
+              {top.completed} completed • {top.delayed} delayed • {top.pending} pending
+            </p>
+          </div>
         </div>
+      )}
+
+      {/* Table */}
+      <div className="bg-white p-4 rounded-xl shadow">
+        <table className="w-full text-left">
+          <thead className="text-sm text-gray-600 border-b">
+            <tr>
+              <th className="py-2">#</th>
+              <th>Name</th>
+              <th className="text-center">Completed</th>
+              <th className="text-center">Delayed</th>
+              <th className="text-center">Pending</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((row, i) => (
+              <tr key={row.user} className="border-t hover:bg-gray-50 transition">
+                <td className="py-3">{i + 1}</td>
+                <td className="py-3 font-medium">{row.name}</td>
+                <td className="py-3 text-center text-green-600 font-semibold">
+                  {row.completed} <Check className="inline-block w-4 h-4 ml-1" />
+                </td>
+                <td className="py-3 text-center text-red-500 font-semibold">
+                  {row.delayed} <Clock className="inline-block w-4 h-4 ml-1" />
+                </td>
+                <td className="py-3 text-center text-gray-700 font-medium">{row.pending}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

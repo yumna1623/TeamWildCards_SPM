@@ -1,5 +1,5 @@
-import Team from "../models/Team.js";
 import User from "../models/User.js";
+import Team from "../models/Team.js";
 
 // -------------------------------------------------------- Get User Dashboard Info
 export const getUserDashboard = async (req, res) => {

@@ -1,5 +1,13 @@
 // src/components/user/UserSideBar.jsx
-import { Users, ListTodo, BarChart3, Trophy, Layers, LogOut, User } from "lucide-react";
+import {
+  Users,
+  ListTodo,
+  BarChart3,
+  Trophy,
+  Layers,
+  LogOut,
+  User,
+} from "lucide-react";
 
 const UserSidebar = ({ activeTab, setActiveTab, userData }) => {
   const { user, team } = userData;
@@ -14,8 +22,14 @@ const UserSidebar = ({ activeTab, setActiveTab, userData }) => {
   return (
     <div className="w-64 bg-[#394867] border-r border-gray-700 flex flex-col p-4 shadow-xl">
       {/* Brand */}
-      <div className="p-4 mb-4">
-        <h2 className="text-2xl font-bold text-white">TeamSync</h2>
+      <div className="p-5">
+       <h2 className="font-bold text-4xl text-white">
+  {userData?.team?.name || "No Team"}
+</h2>
+
+        <p className="text-sm  text-gray-200">
+          Leader: {userData?.team?.leaderName || "N/A"}
+        </p>
       </div>
 
       {/* User Info */}

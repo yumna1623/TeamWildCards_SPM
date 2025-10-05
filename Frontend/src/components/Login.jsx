@@ -1,11 +1,14 @@
+// src/components/Login.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [passcode, setPasscode] = useState("");
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -17,16 +20,15 @@ const Login = () => {
       });
 
       const data = await res.json();
+
       if (!res.ok) throw new Error(data.message || "Login failed");
 
-      localStorage.setItem("token", data.token);
+      // ✅ Save token and user to context + localStorage
+      login(data.user, data.token);
 
-      // redirect based on role
-      if (data.user.role === "admin") {
-        navigate("/AdminDashboard");
-      } else {
-        navigate("/UserDashBoardPage");
-      }
+      // Redirect based on role
+      if (data.user.role === "admin") navigate("/AdminDashboard");
+      else navigate("/UserDashBoardPage");
     } catch (err) {
       setMessage(err.message);
     }
@@ -39,9 +41,7 @@ const Login = () => {
         className="bg-white p-8 rounded-xl shadow-md w-96 space-y-5"
       >
         <h2 className="text-2xl font-bold text-indigo-700 text-center">Login</h2>
-
         {message && <p className="text-red-500 text-center">{message}</p>}
-
         <div>
           <label className="block text-gray-700 mb-1">Email</label>
           <input
@@ -52,7 +52,6 @@ const Login = () => {
             className="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-200 focus:border-indigo-500"
           />
         </div>
-
         <div>
           <label className="block text-gray-700 mb-1">Team Passcode</label>
           <input
@@ -63,7 +62,6 @@ const Login = () => {
             className="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-200 focus:border-indigo-500"
           />
         </div>
-
         <button
           type="submit"
           className="w-full bg-indigo-600 text-white py-2 rounded-lg font-semibold hover:bg-indigo-700 transition"

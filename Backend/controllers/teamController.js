@@ -1,5 +1,5 @@
-import Team from "../models/Team.js";
 import User from "../models/User.js";
+import Team from "../models/Team.js";
 import jwt from "jsonwebtoken";
 
 const generateToken = (id) => {
@@ -122,7 +122,6 @@ export const getTeamMembers = async (req, res) => {
 // -------------------------------------------------------- Get Admin Dashboard Info
 export const getAdminDashboard = async (req, res) => {
   try {
-    // req.user is set from JWT middleware
     const admin = await User.findById(req.user.id);
 
     if (!admin || admin.role !== "admin") {
@@ -138,12 +137,69 @@ export const getAdminDashboard = async (req, res) => {
     }
 
     res.json({
-      teamName: team.name,
-      leader: team.leader,
-      totalMembers: team.members.length,
-      members: team.members,
+      user: {   // ✅ include admin info
+        id: admin._id,
+        name: admin.name,
+        email: admin.email,
+        role: admin.role,
+        team: admin.team,
+      },
+      team: {
+        id: team._id,
+        name: team.name,
+        leader: team.leader,
+        totalMembers: team.members.length,
+        members: team.members,
+      },
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+};
+
+// --------------------------------------------------------------------------------------------------
+
+export const getUserDashboard = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).populate("team");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    let teamData = null;
+
+    if (user.team) {
+const team = await Team.findById(user.team)
+  .populate({ path: "leader", model: "User", select: "name email" })
+  .populate({ path: "members", model: "User", select: "name email" }); // optional if you need members too
+
+
+
+      if (team) {
+        teamData = {
+          id: team._id,
+          name: team.name,
+          leaderName: team.leader?.name || "Unknown",
+          leaderEmail: team.leader?.email || "Unknown",
+        };
+      }
+      console.log("👉 Team fetched:", team);
+console.log("👉 Leader inside team:", team?.leader);
+
+    }
+    
+
+    res.json({
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+      team: teamData, // ✅ send actual team info
+    });
+  } catch (err) {
+    console.error("Error fetching user dashboard:", err);
+    res.status(500).json({ message: "Server error" });
   }
 };
