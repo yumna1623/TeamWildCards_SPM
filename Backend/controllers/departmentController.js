@@ -7,11 +7,12 @@ export const createDepartment = async (req, res) => {
     if (!name) {
       return res.status(400).json({ message: "Department name is required" });
     }
+const department = await Department.create({
+  name,
+  team: req.user.team,
+  members: [req.user._id], // optionally add admin as first member
+});
 
-    const department = await Department.create({
-      name,
-      team: req.user.team, // automatically link to user's team
-    });
 
     res.status(201).json(department);
   } catch (error) {
@@ -22,12 +23,12 @@ export const createDepartment = async (req, res) => {
 
 export const getDepartments = async (req, res) => {
   try {
-    const teamId = req.user.team._id || req.user.team;
+    const teamId = req.query.teamId || req.user.team; // fallback to user's team
 
     const departments = await Department.find({ team: teamId })
       .populate({
         path: "tasks",
-        populate: { path: "assignedTo", select: "name email" } // populate assigned user
+        populate: { path: "assignedTo", select: "name email role" },
       })
       .populate("members", "name email role"); // populate department members
 
@@ -37,7 +38,5 @@ export const getDepartments = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
-
 
 

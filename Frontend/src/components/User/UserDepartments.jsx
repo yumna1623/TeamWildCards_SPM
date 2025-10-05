@@ -33,11 +33,10 @@ const UserDepartments = () => {
       try {
         if (!user?.team) return;
         const res = await fetch(
-          `http://localhost:5000/api/departments?teamId=${
-            user.team._id || user.team
-          }`,
+          `http://localhost:5000/api/departments?teamId=${user.team}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
+
         if (!res.ok) throw new Error("Failed to fetch departments");
         const data = await res.json();
         setDepartments(data);

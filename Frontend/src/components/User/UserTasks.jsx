@@ -75,7 +75,9 @@ const UserTasks = ({ newTask }) => {
       const res = await axios.put(
         `http://localhost:5000/api/tasks/${id}`,
         { status: newStatus },
-        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
       );
 
       // Update task in state
@@ -176,6 +178,10 @@ const UserTasks = ({ newTask }) => {
                   <span className="text-lg font-bold text-gray-800">
                     {task.title || "Untitled"}
                   </span>
+                  <div className="mt-2 text-gray-600 text-sm">
+                    {task.description || "No description provided."}
+                  </div>
+
                   <span
                     className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusTextStyle(
                       task.status
@@ -199,17 +205,7 @@ const UserTasks = ({ newTask }) => {
                       : "No deadline"}
                   </span>
                   <div className="relative">
-                    <button
-                      onClick={() => toggleDropdown(task._id)}
-                      className="flex items-center text-indigo-600 hover:underline text-xs font-medium"
-                    >
-                      Update Status
-                      {openDropdown === task._id ? (
-                        <ChevronUp className="w-3 h-3 ml-1" />
-                      ) : (
-                        <ChevronDown className="w-3 h-3 ml-1" />
-                      )}
-                    </button>
+                  
                     {openDropdown === task._id && (
                       <div className="absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
                         <div className="py-1">
