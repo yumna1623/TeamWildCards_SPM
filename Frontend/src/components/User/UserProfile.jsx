@@ -229,7 +229,9 @@ const getDayColor = (date) => {
  
 
   return (
+    
     <div className="min-h-screen bg-blue-100 p-6 md:p-10 font-sans">
+      
       <div className="flex items-center mb-8">
         <ArrowLeft className="text-gray-600 w-6 h-6 mr-4 cursor-pointer" />
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800">

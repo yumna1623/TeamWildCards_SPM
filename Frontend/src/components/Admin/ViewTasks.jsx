@@ -1,12 +1,21 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { ListTodo, User, Calendar, CheckCircle, XCircle } from "lucide-react";
+import {
+  ListTodo,
+  User,
+  Calendar,
+  CheckCircle,
+  XCircle,
+  Building2,
+} from "lucide-react";
 
 const ViewTasks = () => {
   const { user, token } = useAuth();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [selectedDept, setSelectedDept] = useState("All");
 
+  // 🧠 Fetch all team tasks
   useEffect(() => {
     const fetchTasks = async () => {
       try {
@@ -31,6 +40,7 @@ const ViewTasks = () => {
     if (user && token) fetchTasks();
   }, [user, token]);
 
+  // ✅ Admin approves/rejects a task
   const handleDecision = async (taskId, decision) => {
     try {
       const res = await fetch(
@@ -58,20 +68,50 @@ const ViewTasks = () => {
     }
   };
 
+  // 🧩 Extract unique departments
+  const departments = [
+    "All",
+    ...new Set(tasks.map((t) => t.department?.name).filter(Boolean)),
+  ];
+
+  // 🧩 Filtered task list
+  const filteredTasks =
+    selectedDept === "All"
+      ? tasks
+      : tasks.filter((t) => t.department?.name === selectedDept);
+
   return (
     <div className="p-6 bg-gray-50 rounded-xl shadow-lg min-h-screen">
-      <h2 className="text-3xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-        <ListTodo className="w-7 h-7 text-indigo-600" />
-        All Team Tasks
-      </h2>
+      <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
+        <h2 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+          <ListTodo className="w-7 h-7 text-indigo-600" />
+          All Team Tasks
+        </h2>
+
+        {/* 🧩 Department Filter */}
+        <div className="flex items-center gap-2">
+          <Building2 className="w-5 h-5 text-gray-600" />
+          <select
+            value={selectedDept}
+            onChange={(e) => setSelectedDept(e.target.value)}
+            className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-indigo-400"
+          >
+            {departments.map((dept) => (
+              <option key={dept} value={dept}>
+                {dept}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
 
       {loading ? (
         <p className="text-gray-500">Loading tasks...</p>
-      ) : tasks.length === 0 ? (
-        <p className="text-gray-500">No tasks assigned yet.</p>
+      ) : filteredTasks.length === 0 ? (
+        <p className="text-gray-500">No tasks found for this department.</p>
       ) : (
         <div className="space-y-4">
-          {tasks.map((task) => (
+          {filteredTasks.map((task) => (
             <div
               key={task._id}
               className="p-5 bg-white rounded-xl shadow-md border border-gray-200"
@@ -81,21 +121,30 @@ const ViewTasks = () => {
               </h3>
               <p className="text-sm text-gray-600 mb-2">{task.description}</p>
 
-              <div className="flex items-center gap-4 text-sm text-gray-500">
+              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
                 <span className="flex items-center gap-1">
                   <User className="w-4 h-4" />{" "}
                   {task.assignedTo?.name || "Unassigned"} (
                   {task.assignedTo?.email})
                 </span>
+
                 <span className="flex items-center gap-1">
                   <Calendar className="w-4 h-4" />{" "}
                   {task.deadline
                     ? new Date(task.deadline).toLocaleDateString()
                     : "No deadline"}
                 </span>
+
+                {/* 🏢 Department */}
+                {task.department?.name && (
+                  <span className="flex items-center gap-1">
+                    <Building2 className="w-4 h-4" />
+                    {task.department.name}
+                  </span>
+                )}
               </div>
 
-              {/* Status Badge */}
+              {/* Status & Decision */}
               <div className="mt-3 flex items-center gap-2">
                 <span
                   className={`px-2 py-1 rounded-lg text-xs font-medium ${
@@ -109,7 +158,6 @@ const ViewTasks = () => {
                   {task.status}
                 </span>
 
-                {/* Decision Badge */}
                 {task.status === "Done" && (
                   <span
                     className={`px-2 py-1 rounded-lg text-xs font-medium ${
@@ -120,7 +168,7 @@ const ViewTasks = () => {
                         : "bg-gray-200 text-gray-600"
                     }`}
                   >
-                    {task.decision}
+                    {task.decision || "Pending"}
                   </span>
                 )}
               </div>
@@ -128,7 +176,7 @@ const ViewTasks = () => {
               {/* Admin actions */}
               {user?.role === "admin" &&
                 task.status === "Done" &&
-                task.decision === "Pending" && (
+                (task.decision === "Pending" || !task.decision) && (
                   <div className="flex gap-2 mt-3">
                     <button
                       onClick={() => handleDecision(task._id, "Accepted")}

@@ -95,13 +95,17 @@ export const updateTaskStatus = async (req, res) => {
 export const getTeamTasks = async (req, res) => {
   try {
     const { teamId } = req.params;
-    const tasks = await Task.find({ team: teamId }).populate("assignedTo", "name email");
+    const tasks = await Task.find({ team: teamId })
+      .populate("assignedTo", "name email")
+      .populate("department", "name"); // ✅ Add this line
+
     res.json(tasks);
   } catch (error) {
     console.error("Error fetching team tasks:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 // ✅ Admin accepts/rejects a task
 export const updateTaskDecision = async (req, res) => {
@@ -134,77 +138,43 @@ export const updateTaskDecision = async (req, res) => {
 // Leaderboard (works for both users & admins)
 export const getLeaderboard = async (req, res) => {
   try {
-    let teamId;
+    // Optional: Limit to current team
+    const user = await User.findById(req.user._id);
+    const team = await Team.findById(user.team);
+    if (!team) return res.status(404).json({ message: "Team not found" });
 
-    if (req.user.role === "admin") {
-      // admin can request any team via query
-      teamId = req.query.teamId;
-      if (!teamId) {
-        const admin = await User.findById(req.user._id);
-        teamId = admin?.team;
-      }
-    } else {
-      // member → only their own team
-      const user = await User.findById(req.user._id);
-      teamId = user?.team;
-    }
-
-    if (!teamId) {
-      return res.status(400).json({ message: "No team found" });
-    }
-
-    // fetch all tasks of the team
-    const tasks = await Task.find({ team: teamId });
+    const tasks = await Task.find({ team: team._id }).populate("assignedTo", "name email");
 
     const leaderboard = {};
-    tasks.forEach((t) => {
-      const key = t.assignedTo?.toString() || "unassigned";
-      if (!leaderboard[key]) {
-        leaderboard[key] = {
-          user: key,
-          completed: 0,
-          delayed: 0,
-          pending: 0,
-          rejected: 0,
-          awaitingReview: 0,
-        };
+
+    tasks.forEach((task) => {
+      const userId = task.assignedTo?._id?.toString();
+      const userName = task.assignedTo?.name || "Unknown";
+
+      if (!userId) return;
+
+      if (!leaderboard[userId]) {
+        leaderboard[userId] = { userId, name: userName, completed: 0, delayed: 0, pending: 0 };
       }
 
-      if (t.status === "Done") {
-        if (t.decision === "Accepted") {
-          const finishTime = t.completedAt || t.updatedAt;
-          if (t.deadline && new Date(finishTime) <= new Date(t.deadline)) {
-            leaderboard[key].completed++;
-          } else {
-            leaderboard[key].delayed++;
-          }
-        } else if (t.decision === "Rejected") {
-          leaderboard[key].rejected++;
-        } else {
-          leaderboard[key].awaitingReview++;
-        }
-      } else if (t.status === "Pending" || t.status === "In Progress") {
-        leaderboard[key].pending++;
+      if (task.status === "Done") leaderboard[userId].completed++;
+      else leaderboard[userId].pending++;
+
+      if (task.deadline && new Date(task.deadline) < new Date() && task.status !== "Done") {
+        leaderboard[userId].delayed++;
       }
     });
 
-    // resolve user info
-    const userIds = Object.keys(leaderboard).filter((id) => id !== "unassigned");
-    const users = await User.find({ _id: { $in: userIds } }).select("name email");
-
-    const results = Object.values(leaderboard).map((entry) => {
-      const user = users.find((u) => u._id.toString() === entry.user);
-      return {
-        ...entry,
-        name: user?.name || "Unknown",
-        email: user?.email || "Unknown",
-      };
+    const sorted = Object.values(leaderboard).sort((a, b) => {
+      if (b.completed !== a.completed) return b.completed - a.completed;
+      return a.delayed - b.delayed;
     });
 
-    res.json(results);
+    res.json(sorted);
   } catch (err) {
-    console.error("Error fetching leaderboard:", err);
+    console.error("Error generating leaderboard:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
