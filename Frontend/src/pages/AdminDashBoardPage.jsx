@@ -15,44 +15,57 @@ const AdminDashBoardPage = () => {
   const [activeTab, setActiveTab] = useState("departments");
   const [showTaskModal, setShowTaskModal] = useState(false);
 
-  useEffect(() => {
-    const fetchAdminData = async () => {
-      if (!token) {
-        setError("No token found. Please login again.");
-        setLoading(false);
-        return;
-      }
+  // ✅ Fetch Admin Dashboard Data
+  const fetchAdminData = async () => {
+    if (!token) {
+      setError("No token found. Please login again.");
+      setLoading(false);
+      return;
+    }
 
-      try {
-        const res = await fetch("http://localhost:5000/api/team/admin-dashboard", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+    try {
+      const res = await fetch("http://localhost:5000/api/team/admin-dashboard", {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-        if (!res.ok) {
-          if (res.status === 401) {
-            throw new Error("Unauthorized. Please log in again.");
-          } else {
-            throw new Error("Failed to fetch dashboard data");
-          }
+      if (!res.ok) {
+        if (res.status === 401) {
+          throw new Error("Unauthorized. Please log in again.");
+        } else {
+          throw new Error("Failed to fetch dashboard data");
         }
-
-        const data = await res.json();
-
-        // ✅ only store team info, user stays in context
-        setTeamData(data.team);
-      } catch (err) {
-        console.error("Error fetching admin data:", err.message);
-        setError(err.message);
-      } finally {
-        setLoading(false);
       }
-    };
 
+      const data = await res.json();
+      setTeamData(data.team);
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching admin data:", err.message);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ Run once + auto-refresh every few seconds
+  useEffect(() => {
     fetchAdminData();
+    const interval = setInterval(fetchAdminData, 7000); // every 7 seconds
+    return () => clearInterval(interval);
   }, [token]);
+
+  // ✅ Persist login (in case AuthContext resets)
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    const storedToken = localStorage.getItem("token");
+    if (!user && storedUser && storedToken) {
+      // if AuthContext lost data temporarily, restore it
+      window.location.reload(); // reload once to rehydrate context
+    }
+  }, [user]);
 
   if (loading) return <p className="p-6">Loading dashboard...</p>;
   if (error) return <p className="p-6 text-red-500">{error}</p>;
@@ -61,7 +74,7 @@ const AdminDashBoardPage = () => {
   return (
     <div className="flex min-h-screen bg-gray-100">
       <Sidebar
-        adminData={{ ...teamData, admin: user }} // ✅ pass both team + admin user
+        adminData={{ ...teamData, admin: user }}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         setShowTaskModal={setShowTaskModal}
@@ -72,7 +85,6 @@ const AdminDashBoardPage = () => {
         {activeTab === "tasks" && <Tasks />}
         {activeTab === "viewTasks" && <ViewTasks />}
         {activeTab === "leaderboard" && <AdminLeaderboard />}
-
       </div>
     </div>
   );

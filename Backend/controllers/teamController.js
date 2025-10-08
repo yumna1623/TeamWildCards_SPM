@@ -1,6 +1,7 @@
 import User from "../models/User.js";
 import Team from "../models/Team.js";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs"; // ✅ add this
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
@@ -29,32 +30,34 @@ export const createTeam = async (req, res) => {
       return res.status(500).json({ message: "Failed to create admin user" });
     }
 
-    // 3. Create team
+    // ✅ 3. Hash team passcode before saving
+    const hashedPasscode = await bcrypt.hash(passcode, 10);
+
+    // 4. Create team
     const team = await Team.create({
       name: teamName,
-      passcode,
+      passcode: hashedPasscode, // ✅ stored securely
       leader: adminUser._id,
       members: [adminUser._id],
     });
 
-    // 4. Link admin to team
+    // 5. Link admin to team
     adminUser.team = team._id;
     await adminUser.save();
 
-    // 5. Respond
-   res.status(201).json({
-  message: "✅ Team created successfully",
-  token: generateToken(adminUser._id),
-  team,
-  user: {   // ✅ consistent with joinTeam & login
-    id: adminUser._id,
-    name: adminUser.name,
-    email: adminUser.email,
-    role: adminUser.role,
-    team: adminUser.team,   // ✅ send team id
-  },
-});
-
+    // 6. Respond
+    res.status(201).json({
+      message: "✅ Team created successfully",
+      token: generateToken(adminUser._id),
+      team,
+      user: {
+        id: adminUser._id,
+        name: adminUser.name,
+        email: adminUser.email,
+        role: adminUser.role,
+        team: adminUser.team,
+      },
+    });
   } catch (err) {
     console.error("❌ Error creating team:", err);
     res.status(500).json({ message: err.message });
@@ -62,26 +65,50 @@ export const createTeam = async (req, res) => {
 };
 
 
+
 // ---------------------------------------------------------------Join Team
 // ----------------- Join Team (Member)
+import bcrypt from "bcryptjs";
+
 export const joinTeam = async (req, res) => {
   const { name, email, password, passcode } = req.body;
 
   try {
-    const team = await Team.findOne({ passcode });
-    if (!team) return res.status(404).json({ message: "Team not found" });
+    // 1️⃣ Fetch all teams (we can't match hash directly)
+    const teams = await Team.find();
 
-    // Create user with their own password
+    // 2️⃣ Find which team’s passcode matches
+    let matchedTeam = null;
+    for (const t of teams) {
+      const isMatch = await bcrypt.compare(passcode, t.passcode);
+      if (isMatch) {
+        matchedTeam = t;
+        break;
+      }
+    }
+
+    if (!matchedTeam) {
+      return res.status(404).json({ message: "Invalid passcode or team not found" });
+    }
+
+    // 3️⃣ Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    // 4️⃣ Create user as member
     const user = await User.create({
       name,
       email,
-      password,  // ✅ hashed by model
+      password,
       role: "member",
-      team: team._id,
+      team: matchedTeam._id,
     });
 
-    team.members.push(user._id);
-    await team.save();
+    // 5️⃣ Add to team members list
+    matchedTeam.members.push(user._id);
+    await matchedTeam.save();
 
     res.json({
       message: "Joined team successfully",
@@ -91,13 +118,14 @@ export const joinTeam = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        team: team._id,
+        team: matchedTeam._id,
       },
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 
 export const getTeamMembers = async (req, res) => {
