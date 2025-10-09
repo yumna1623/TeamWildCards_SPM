@@ -68,17 +68,15 @@ export const createTeam = async (req, res) => {
 
 // ---------------------------------------------------------------Join Team
 // ----------------- Join Team (Member)
-import bcrypt from "bcryptjs";
 
 export const joinTeam = async (req, res) => {
   const { name, email, password, passcode } = req.body;
 
   try {
-    // 1️⃣ Fetch all teams (we can't match hash directly)
+    // 1️⃣ Fetch all teams and match passcode
     const teams = await Team.find();
-
-    // 2️⃣ Find which team’s passcode matches
     let matchedTeam = null;
+
     for (const t of teams) {
       const isMatch = await bcrypt.compare(passcode, t.passcode);
       if (isMatch) {
@@ -91,13 +89,13 @@ export const joinTeam = async (req, res) => {
       return res.status(404).json({ message: "Invalid passcode or team not found" });
     }
 
-    // 3️⃣ Check if user already exists
+    // 2️⃣ Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    // 4️⃣ Create user as member
+    // 3️⃣ Create member and explicitly assign team
     const user = await User.create({
       name,
       email,
@@ -106,25 +104,30 @@ export const joinTeam = async (req, res) => {
       team: matchedTeam._id,
     });
 
-    // 5️⃣ Add to team members list
+    // 4️⃣ Push member to team members
     matchedTeam.members.push(user._id);
     await matchedTeam.save();
 
+    // ✅ populate team for immediate response
+    const populatedUser = await User.findById(user._id).populate("team");
+
     res.json({
       message: "Joined team successfully",
-      token: generateToken(user._id),
+      token: generateToken(populatedUser._id),
       user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        team: matchedTeam._id,
+        id: populatedUser._id,
+        name: populatedUser.name,
+        email: populatedUser.email,
+        role: populatedUser.role,
+        team: populatedUser.team?._id,
       },
     });
   } catch (err) {
+    console.error("❌ Join error:", err);
     res.status(500).json({ message: err.message });
   }
 };
+
 
 
 
