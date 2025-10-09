@@ -23,12 +23,15 @@ const UserSidebar = ({ activeTab, setActiveTab, userData }) => {
     <div className="w-64 bg-[#394867] border-r border-gray-700 flex flex-col p-4 shadow-xl">
       {/* Brand */}
       <div className="p-5">
-       <h2 className="font-bold text-4xl text-white">
-  {userData?.team?.name || "No Team"}
-</h2>
+        <h2 className="font-bold text-4xl text-white">
+          {userData?.team?.name || "No Team"}
+        </h2>
 
-        <p className="text-sm  text-gray-200">
-          Leader: {userData?.team?.leaderName || "N/A"}
+        <p className="text-sm text-gray-200">
+          Leader: {userData?.team?.leader?.name || "N/A"}
+        </p>
+        <p className="text-xs text-gray-400">
+          {userData?.team?.leader?.email || ""}
         </p>
       </div>
 
