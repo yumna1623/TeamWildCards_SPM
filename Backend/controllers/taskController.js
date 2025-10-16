@@ -4,6 +4,7 @@ import Team from "../models/Team.js";
 import Department from "../models/Department.js";
 
 // Create Task (Admin assigns)
+// Create Task (Admin assigns)
 export const createTask = async (req, res) => {
   try {
     const { title, description, assignedTo, deadline, priority, department } = req.body;
@@ -12,12 +13,13 @@ export const createTask = async (req, res) => {
     const team = await Team.findById(admin.team);
     if (!team) return res.status(404).json({ message: "Team not found" });
 
-    // verify member is in team
+    // Verify assigned member is in same team
     const member = await User.findOne({ _id: assignedTo, team: team._id });
     if (!member) {
       return res.status(400).json({ message: "Assigned member not found in team" });
     }
 
+    // ✅ Create the task
     const task = await Task.create({
       title,
       description,
@@ -31,13 +33,16 @@ export const createTask = async (req, res) => {
       createdBy: admin._id,
     });
 
-    // link to department
+    // ✅ Link to Department (both task + member)
     if (department) {
-      const dept = await Department.findById(department);
-      if (dept) {
-        dept.tasks.push(task._id);
-        await dept.save();
-      }
+      await Department.findByIdAndUpdate(
+        department,
+        {
+          $push: { tasks: task._id },
+          $addToSet: { members: member._id }, // avoid duplicates
+        },
+        { new: true }
+      );
     }
 
     res.status(201).json({ message: "✅ Task created successfully", task });
@@ -46,6 +51,7 @@ export const createTask = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 // Get tasks assigned to logged-in user
 export const getMyTasks = async (req, res) => {

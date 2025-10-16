@@ -1,4 +1,5 @@
 import Department from "../models/Department.js";
+import User from "../models/User.js"; // ✅ You forgot this import!
 
 export const createDepartment = async (req, res) => {
   try {
@@ -7,12 +8,12 @@ export const createDepartment = async (req, res) => {
     if (!name) {
       return res.status(400).json({ message: "Department name is required" });
     }
-const department = await Department.create({
-  name,
-  team: req.user.team,
-  members: [req.user._id], // optionally add admin as first member
-});
 
+    const department = await Department.create({
+      name,
+      team: req.user.team,
+      members: [req.user._id], // ✅ Add admin as first member
+    });
 
     res.status(201).json(department);
   } catch (error) {
@@ -21,22 +22,43 @@ const department = await Department.create({
   }
 };
 
+// ✅ Get all departments for a team (with members & tasks)
 export const getDepartments = async (req, res) => {
   try {
-    const teamId = req.query.teamId || req.user.team; // fallback to user's team
+    const { teamId } = req.query;
+    if (!teamId) {
+      return res.status(400).json({ message: "Team ID is required" });
+    }
 
+    // Fetch departments and populate tasks and members
     const departments = await Department.find({ team: teamId })
       .populate({
         path: "tasks",
         populate: { path: "assignedTo", select: "name email role" },
       })
-      .populate("members", "name email role"); // populate department members
+      .populate("members", "name email role");
+
+    // ✅ Add assigned task users to members (if not already)
+    for (let dept of departments) {
+      const assignedUsers = dept.tasks
+        .map((t) => t.assignedTo?._id?.toString())
+        .filter(Boolean);
+
+      const existingMembers = dept.members.map((m) => m._id.toString());
+
+      const uniqueMemberIds = [...new Set([...existingMembers, ...assignedUsers])];
+
+      // Fetch all unique members with their details
+      const members = await User.find({ _id: { $in: uniqueMemberIds } }).select(
+        "name email role"
+      );
+
+      dept.members = members; // ✅ Replace with full member info
+    }
 
     res.json(departments);
-  } catch (error) {
-    console.error("Error fetching departments:", error);
-    res.status(500).json({ message: "Server error" });
+  } catch (err) {
+    console.error("Error fetching departments:", err);
+    res.status(500).json({ message: "Server error fetching departments" });
   }
 };
-
-

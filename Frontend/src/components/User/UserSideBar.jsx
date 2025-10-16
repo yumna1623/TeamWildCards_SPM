@@ -1,4 +1,4 @@
-// src/components/user/UserSideBar.jsx
+import { useState } from "react";
 import {
   Users,
   ListTodo,
@@ -7,10 +7,13 @@ import {
   Layers,
   LogOut,
   User,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 const UserSidebar = ({ activeTab, setActiveTab, userData }) => {
   const { user, team } = userData;
+  const [showMembers, setShowMembers] = useState(false);
 
   const menuItems = [
     { id: "tasks", label: "Tasks", icon: <ListTodo /> },
@@ -24,15 +27,13 @@ const UserSidebar = ({ activeTab, setActiveTab, userData }) => {
       {/* Brand */}
       <div className="p-5">
         <h2 className="font-bold text-4xl text-white">
-          {userData?.team?.name || "No Team"}
+          {team?.name || "No Team"}
         </h2>
 
         <p className="text-sm text-gray-200">
-          Leader: {userData?.team?.leader?.name || "N/A"}
+          Leader: {team?.leader?.name || "N/A"}
         </p>
-        <p className="text-xs text-gray-400">
-          {userData?.team?.leader?.email || ""}
-        </p>
+        <p className="text-xs text-gray-400">{team?.leader?.email || ""}</p>
       </div>
 
       {/* User Info */}
@@ -46,10 +47,33 @@ const UserSidebar = ({ activeTab, setActiveTab, userData }) => {
         </div>
       </div>
 
-      {/* Team Info */}
-      <div className="flex items-center gap-2 text-sm text-gray-300 px-4 mb-6">
-        <Users size={16} />
-        <span className="font-medium">{team.totalMembers} Team Members</span>
+      {/* Team Info with dropdown */}
+      <div className="px-4 mb-4">
+        <button
+          onClick={() => setShowMembers(!showMembers)}
+          className="flex items-center justify-between w-full text-sm text-gray-300 font-medium hover:text-white transition"
+        >
+          <div className="flex items-center gap-2">
+            <Users size={16} />
+            <span>{team?.totalMembers || 0} Team Members</span>
+          </div>
+          {showMembers ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </button>
+
+        {showMembers && (
+          <div className="mt-2 ml-6 bg-white/10 rounded-lg p-2 text-gray-200 text-sm max-h-40 overflow-y-auto">
+            {team?.members && team.members.length > 0 ? (
+              team.members.map((member, idx) => (
+                <div key={idx} className="border-b border-gray-600 py-1">
+                  <p className="font-medium">{member.name}</p>
+                  <p className="text-xs text-gray-400">{member.email}</p>
+                </div>
+              ))
+            ) : (
+              <p className="text-xs text-gray-400">No members found</p>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Navigation */}

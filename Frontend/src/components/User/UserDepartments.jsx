@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { Layers, Clock } from "lucide-react";
+import { Layers, Clock, Users } from "lucide-react";
 
 const UserDepartments = () => {
   const { user, token } = useAuth();
@@ -27,16 +27,17 @@ const UserDepartments = () => {
     Pending: "bg-gray-200 text-gray-600",
   };
 
-  // ✅ Fetch only team departments
+  // ✅ Fetch team departments
   useEffect(() => {
     const fetchDepts = async () => {
       try {
         if (!user?.team) return;
         const res = await fetch(
           `http://localhost:5000/api/departments?teamId=${user.team}`,
-          { headers: { Authorization: `Bearer ${token}` } }
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
         );
-
         if (!res.ok) throw new Error("Failed to fetch departments");
         const data = await res.json();
         setDepartments(data);
@@ -58,12 +59,14 @@ const UserDepartments = () => {
         </button>
       )}
 
+      {/* --- Department Cards --- */}
       {!selectedDept ? (
         <div className="z-10 relative">
           <h2 className="text-4xl font-extrabold text-gray-900 mb-4 flex items-center gap-2">
             <Layers className="w-8 h-8 text-indigo-600" />
             Your Departments
           </h2>
+
           {departments.length === 0 ? (
             <p className="text-gray-600">No departments found in your team.</p>
           ) : (
@@ -88,20 +91,23 @@ const UserDepartments = () => {
           )}
         </div>
       ) : (
+        /* --- Selected Department View --- */
         <div className="flex flex-col gap-8 z-10 relative">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold text-gray-800">
               {selectedDept.name}
             </h2>
             <span className="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg shadow">
-              {selectedDept.tasks?.length || 0} Tasks
+              {selectedDept.tasks?.length || 0} Tasks •{" "}
+              {selectedDept.members?.length || 0} Members
             </span>
           </div>
 
-          {/* Members */}
+          {/* --- Members --- */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-700 mb-4">
-              Team Members
+            <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
+              <Users className="w-5 h-5 text-indigo-600" />
+              Department Members
             </h3>
             {selectedDept.members?.length > 0 ? (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -111,7 +117,8 @@ const UserDepartments = () => {
                     className="bg-white p-5 rounded-xl shadow hover:shadow-md transition"
                   >
                     <h4 className="font-semibold text-gray-800">{m.name}</h4>
-                    <p className="text-sm text-gray-500">{m.role}</p>
+                    <p className="text-sm text-gray-500 mb-1">{m.role}</p>
+                    <p className="text-xs text-gray-400">{m.email}</p>
                   </div>
                 ))}
               </div>
@@ -120,9 +127,11 @@ const UserDepartments = () => {
             )}
           </div>
 
-          {/* Tasks */}
+          {/* --- Tasks --- */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-700 mb-4">Tasks</h3>
+            <h3 className="text-lg font-semibold text-gray-700 mb-4">
+              Department Tasks
+            </h3>
             {selectedDept.tasks?.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse bg-white shadow rounded-xl overflow-hidden">
