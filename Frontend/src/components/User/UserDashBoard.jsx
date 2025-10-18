@@ -5,6 +5,7 @@ import UserDepartments from "./UserDepartments";
 import UserLeaderboard from "./UserLeaderboard";
 import UserTasks from "./UserTasks";
 import UserProfile from "./UserProfile";
+import Analytics from '../Analytics'
 
 const UserDashboard = () => {
   const [activeTab, setActiveTab] = useState("tasks");
@@ -55,7 +56,7 @@ const UserDashboard = () => {
       <div className="flex-1">
         {activeTab === "tasks" && <UserTasks />}
         {activeTab === "departments" && <UserDepartments />}
-        {activeTab === "analytics" && <UserProfile />}
+        {activeTab === "analytics" && <Analytics />}
         {activeTab === "leaderboard" && <UserLeaderboard />}
         {activeTab === "profile" && <UserProfile />}
       </div>

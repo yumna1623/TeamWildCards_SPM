@@ -1,7 +1,6 @@
-// src/components/User/UserLeaderboard.jsx
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { Trophy, Check, Clock } from "lucide-react";
+import { Trophy, Check, Clock, Medal, Star } from "lucide-react"; // Medal for 2nd, Star for 3rd
 
 const UserLeaderboard = () => {
   const { user, token } = useAuth();
@@ -33,6 +32,19 @@ const UserLeaderboard = () => {
 
   const top = data[0];
 
+  const getRankIcon = (rank) => {
+    switch (rank) {
+      case 0:
+        return <Trophy className="w-6 h-6 text-yellow-500" />;
+      case 1:
+        return <Medal className="w-6 h-6 text-gray-400" />;
+      case 2:
+        return <Star className="w-6 h-6 text-bronze-400" />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="relative overflow-hidden min-h-screen p-6 md:p-8 bg-[#C4D9FF] rounded-xl shadow-lg 
       before:absolute before:inset-0 before:bg-[linear-gradient(to_right,#E0E7FF_1px,transparent_1px),linear-gradient(to_bottom,#E0E7FF_1px,transparent_1px)] 
@@ -56,11 +68,19 @@ const UserLeaderboard = () => {
               <p className="text-sm text-gray-500">
                 {top.completed} completed • {top.delayed} delayed • {top.pending} pending
               </p>
+              {/* Completion rate progress bar */}
+              <div className="w-full bg-gray-200 h-2 rounded-full mt-2">
+                <div
+                  className="bg-green-500 h-2 rounded-full"
+                  style={{ width: `${(top.completed / (top.completed + top.pending)) * 100}%` }}
+                ></div>
+              </div>
+              <p className="mt-1 text-sm text-gray-600">{Math.round((top.completed / (top.completed + top.pending)) * 100)}%</p>
             </div>
           </div>
         )}
 
-        {/* Table */}
+        {/* Leaderboard Table */}
         <div className="bg-white p-4 rounded-xl shadow">
           <table className="w-full text-left">
             <thead className="text-sm text-gray-600">
@@ -70,12 +90,15 @@ const UserLeaderboard = () => {
                 <th className="text-center">Completed</th>
                 <th className="text-center">Delayed</th>
                 <th className="text-center">Pending</th>
+                <th className="text-center">Completion Rate</th>
               </tr>
             </thead>
             <tbody>
               {data.map((row, i) => (
-                <tr key={row.userId} className="border-t">
-                  <td className="py-3">{i + 1}</td>
+                <tr key={row.userId} className="border-t hover:bg-gray-50">
+                  <td className="py-3">
+                    {getRankIcon(i)} {/* Show appropriate icon based on rank */}
+                  </td>
                   <td className="py-3 font-medium">{row.name}</td>
                   <td className="py-3 text-center text-green-600 font-semibold">
                     {row.completed} <Check className="inline-block w-4 h-4 ml-1" />
@@ -84,6 +107,18 @@ const UserLeaderboard = () => {
                     {row.delayed} <Clock className="inline-block w-4 h-4 ml-1" />
                   </td>
                   <td className="py-3 text-center text-gray-700 font-medium">{row.pending}</td>
+                  <td className="py-3 text-center">
+                    {/* Completion Rate Progress Bar */}
+                    <div className="w-full bg-gray-200 h-4 rounded-full mt-2">
+                      <div
+                        className="bg-blue-500 h-4 rounded-full"
+                        style={{
+                          width: `${(row.completed / (row.completed + row.pending)) * 100}%`,
+                        }}
+                      ></div>
+                    </div>
+                    <p className="mt-1 text-sm text-gray-600">{Math.round((row.completed / (row.completed + row.pending)) * 100)}%</p>
+                  </td>
                 </tr>
               ))}
             </tbody>

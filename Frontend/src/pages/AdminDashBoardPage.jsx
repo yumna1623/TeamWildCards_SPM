@@ -6,6 +6,7 @@ import Departments from "../components/admin/Departments";
 import Tasks from "../components/admin/Tasks";
 import ViewTasks from "../components/admin/ViewTasks";
 import AdminLeaderboard from "../components/Admin/Leaderboard";
+import Analytics from '../components/Analytics'
 
 const AdminDashBoardPage = () => {
   const { user, token } = useAuth(); // ✅ keep role & user from context
@@ -84,6 +85,7 @@ const AdminDashBoardPage = () => {
         {activeTab === "departments" && <Departments />}
         {activeTab === "tasks" && <Tasks />}
         {activeTab === "viewTasks" && <ViewTasks />}
+        {activeTab === "analytics" && <Analytics />}
         {activeTab === "leaderboard" && <AdminLeaderboard />}
       </div>
     </div>
