@@ -2,7 +2,7 @@ import { Users, CheckSquare, BarChart3, TrendingUp, Handshake, Box } from "lucid
 
 const Features = () => {
   return (
-    <div className="py-12 bg-gray-100">
+    <div className="py-28 bg-gray-100">
       <div className="max-w-5xl mx-auto px-6">
         <section className="p-12 bg-gray-900 text-white rounded-3xl shadow-xl">
           <div className="text-center">
