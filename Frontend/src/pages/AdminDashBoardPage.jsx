@@ -1,10 +1,10 @@
 // src/pages/AdminDashboard.jsx
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import SideBar from "../components/admin/SideBar";
-import Departments from "../components/admin/Departments";
-import Tasks from "../components/admin/Tasks";
-import ViewTasks from "../components/admin/ViewTasks";
+import SideBar from "../components/Admin/SideBar";
+import Departments from "../components/Admin/Departments";
+import Tasks from "../components/Admin/Tasks";
+import ViewTasks from "../components/Admin/ViewTasks";
 import AdminLeaderboard from "../components/Admin/Leaderboard";
 import Analytics from '../components/Analytics'
 import { Sidebar } from "lucide-react";
