@@ -245,13 +245,9 @@ const getDayColor = (date) => {
           {/* User Info */}
           <div className="bg-blue-50 p-6 rounded-2xl shadow-sm">
             <div className="flex items-center space-x-4 mb-6">
-              <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-xl font-bold text-white">
-                {user?.name
-                  ? `${user.name.charAt(0)}${user.name
-                      .split(" ")[1]
-                      ?.charAt(0)}`
-                  : "U"}
-              </div>
+<div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-xl font-bold text-white">
+  {user?.name ? user.name.charAt(0) : "U"}  {/* Only first letter of the user's name */}
+</div>
               <div>
                 <h2 className="text-xl font-bold text-gray-800">{user.name}</h2>
                 <p className="text-gray-500 text-sm">{user.title}</p>
@@ -421,27 +417,7 @@ const getDayColor = (date) => {
             </div>
           </div>
 
-          {/* Calendar */}
-          {/* <div className="bg-white p-6 rounded-2xl shadow-sm">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">Calendar</h3>
-            <div className="grid grid-cols-7 gap-1 text-center text-sm">
-              {["M", "T1", "W", "T2", "F", "S1", "S2"].map((day, i) => (
-                <div key={i} className="text-xs text-gray-400">
-                  {day.replace(/[0-9]/g, "")}
-                </div>
-              ))}
-              {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
-                <div
-                  key={day}
-                  className={`w-8 h-8 flex items-center justify-center rounded-full font-medium ${getDayColor(
-                    day
-                  )}`}
-                >
-                  {day}
-                </div>
-              ))}
-            </div>
-          </div> */}
+       
       <div className="bg-white p-6 rounded-2xl shadow-sm">
   <div className="flex justify-between items-center mb-2">
     <button onClick={handlePrevMonth}>&larr;</button>
