@@ -1,12 +1,13 @@
 // src/pages/AdminDashboard.jsx
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import Sidebar from "../components/admin/Sidebar";
+import SideBar from "../components/admin/SideBar";
 import Departments from "../components/admin/Departments";
 import Tasks from "../components/admin/Tasks";
 import ViewTasks from "../components/admin/ViewTasks";
 import AdminLeaderboard from "../components/Admin/Leaderboard";
 import Analytics from '../components/Analytics'
+import { Sidebar } from "lucide-react";
 
 const AdminDashBoardPage = () => {
   const { user, token } = useAuth(); // ✅ keep role & user from context
@@ -74,7 +75,7 @@ const AdminDashBoardPage = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <Sidebar
+      <SideBar
         adminData={{ ...teamData, admin: user }}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
