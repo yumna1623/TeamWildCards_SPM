@@ -7,7 +7,6 @@ import Tasks from "../components/Admin/Tasks";
 import ViewTasks from "../components/Admin/ViewTasks";
 import AdminLeaderboard from "../components/Admin/Leaderboard";
 import Analytics from '../components/Analytics'
-import { Sidebar } from "lucide-react";
 
 const AdminDashBoardPage = () => {
   const { user, token } = useAuth(); // ✅ keep role & user from context
